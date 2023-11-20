@@ -1,0 +1,51 @@
+{
+  "name": "result",
+  "version": "1.0.0",
+  "description": "A library offering functional and object-oriented programming tools for state and error management, compatible with both TypeScript and JavaScript projects.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build",
+    "test:js": "npm run build && mocha 'dist/test/**/*.js'",
+    "test:ts": "mocha -ext ts 'test/**/*.test.ts' -r ts-node/register -r ./test/test-setup.ts -t 5000"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NetLawPlatform/result.git"
+  },
+  "keywords": [
+    "developer-tools",
+    "software-design-patterns",
+    "functional-utils",
+    "object-oriented-utils",
+    "reactive-programming",
+    "functional-programming",
+    "object-oriented-programming",
+    "functional-object-oriented-integration",
+    "typescript-library",
+    "javascript-library",
+    "typescript-framework",
+    "javascript-framework",
+    "typescript-components",
+    "javascript-components",
+    "typescript-state-management",
+    "javascript-state-management",
+    "state-management",
+    "immutable-state"
+  ],
+  "author": "Richard Bumbury",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/NetLawPlatform/result/issues"
+  },
+  "homepage": "https://github.com/NetLawPlatform/result#readme",
+  "devDependencies": {
+    "@types/node": "^20.9.2",
+    "@types/chai": "^4.3.10",
+    "@types/mocha": "^10.0.4",
+    "chai": "^4.3.10",
+    "mocha": "^10.2.0",
+    "ts-mocha": "^10.0.0",
+    "typescript": "^5.3.2"
+  }
+}
