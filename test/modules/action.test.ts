@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { Action } from "../../src/modules";
 
-describe("Action class", () => {
+describe("Action", () => {
     describe("create", () => {
         it("should create an Action instance with the correct name", () => {
             const name = "TEST_ACTION";
