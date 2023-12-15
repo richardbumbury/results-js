@@ -1,32 +1,35 @@
+import { Effect } from "./effect";
+
 /**
- * This interface represents an executable action within an application.
- * It encapsulates the logic and necessary data to perform a specific operation.
+ * Defines the structure and behavior of an executable action within an application.
  *
- * @template P The parameters used for the action's execution.
- * @template R The response produced by executing the action.
+ * @template P The type of parameters the action accepts.
+ * @template S The type of the state the action operates on.
+ * @template C The type of the content produced by the action.
  */
-export interface IAction<P = any, R = any> {
+export interface Action<P = any, S = any, C = any> {
+
     /**
-     * The name of the action.
+     * A unique identifier or name for the action.
      */
     name: string;
 
     /**
-     * The parameters passed to the action.
+     * The parameters required to execute the action.
      */
     params: P[];
 
     /**
-     * The function encapsulating the operation the action will execute.
-     *
-     * @param params The parameters necessary for executing the action.
-     *
-     * @returns Returns a result of type R, as defined by the action's logic
-     */
-    exec: (params: P[]) => R;
-
-    /**
-     * The timestamp when the action was created or initialized.
+     * The timestamp marking when the action was created or initialized.
      */
     timestamp: Date;
+
+    /**
+     * The logic to be executed by the action, producing an effect on the state.
+     *
+     * @param currentState The current state before the action is applied.
+     * @param params The parameters necessary to execute the action.
+     * @returns An Effect object containing the content and state transformation logic.
+     */
+    exec: (currentState: S, params: P[]) => Effect<S, C> | Promise<Effect<S, C>>;
 }
