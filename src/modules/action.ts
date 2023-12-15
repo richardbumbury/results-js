@@ -1,40 +1,45 @@
-import { IAction } from "../interfaces";
+import { Action as IAction, Effect as IEffect } from "../interfaces";
 
 /**
- * The Action class implements the IAction interface, providing a concrete representation of an executable action within a system.
+ * Represents an executable action within an application.
  *
  * @template P The type of parameters the action accepts.
- * @template R The type of the response produced by executing the action.
+ * @template S The type of the state on which the action is performed.
+ * @template C The type of the content returned by the action's execution.
  */
-export class Action<P = any, R = any> implements IAction<P, R> {
+export class Action<P = any, S = any, C = any> implements IAction<P, S, C> {
+
     /**
-     * The name of the action.
+     * The name of the action, serving as an identifier.
      */
     private readonly _name: string;
 
     /**
-     * The parameters passed to the action.
+     * The parameters passed to the action, used in its execution.
      */
     private readonly _params: P[];
 
     /**
-     * The function encapsulating the operation the action will execute.
+     * The function that encapsulates the operation the action will execute.
+     * It takes the current state and parameters, and returns the new state resulting from the action.
+     * Supports asynchronous operations, as indicated by the possible Promise return type.
      */
-    private readonly _exec: (params: P[]) => R;
+    private readonly _exec: (currentState: S, params: P[]) => IEffect<S, C>;
 
     /**
      * The timestamp when the action was created or initialized.
+     * Useful for tracking, logging, or timing purposes.
      */
     private readonly _timestamp: Date;
 
     /**
-     * Constructs a new Action object representing an executable action to change the state within an application.
+     * Constructs a new Action.
      *
-     * @param name The name of the action.
-     * @param params The parameters passed to the action required for its execution.
-     * @param exec The function encapsulating the execution logic that is invoked to perform the action.
+     * @param name The name of the action, providing a unique identifier.
+     * @param params Parameters required for executing the action.
+     * @param exec The function that defines the execution logic of the action.
      */
-    private constructor(name: string, params: P[], exec: (params: P[]) => R) {
+    constructor(name: string, params: P[], exec: (currentState: S, params: P[]) => IEffect<S, C>) {
         this._name = name;
         this._params = params;
         this._exec = exec;
@@ -42,7 +47,7 @@ export class Action<P = any, R = any> implements IAction<P, R> {
     }
 
     /**
-     * Provides access to the name of the action.
+     * Gets the name of the action.
      *
      * @returns The name of the action.
      */
@@ -51,46 +56,42 @@ export class Action<P = any, R = any> implements IAction<P, R> {
     }
 
     /**
-     * Provides access to the parameters used to execute the action.
+     * Gets the parameters for the action.
      *
-     * @returns An array of parameters for the action.
+     * @returns An array of parameters.
      */
     get params(): P[] {
         return this._params;
     }
 
     /**
-     * Provides access to the action's execution logic.
+     * Gets the execution logic of the action.
      *
-     * @returns The exec function of the action.
+     * @returns The function encapsulating the action's execution logic.
      */
-    get exec(): (params: P[]) => R {
+    get exec(): (currentState: S, params: P[]) => IEffect<S, C> {
         return this._exec;
     }
 
     /**
-     * Provides access to the timestamp of the action.
+     * Gets the timestamp marking the creation of the action.
      *
-     * @returns The timestamp indicating when the action was created.
+     * @returns The timestamp of the action's creation.
      */
     get timestamp(): Date {
         return this._timestamp;
     }
 
     /**
-     * Creates a new action.
-     *
-     * @template P The type of parameters that the action will accept.
-     * @template R The type of the result that the action will produce upon execution.
+     * Factory method to create a new Action instance.
      *
      * @param name The name of the action.
-     * @param params The parameters passed to the `exec` function during execution.
-     * @param exec The execution logic of the action.
+     * @param params Parameters required for the action.
+     * @param exec The execution function that defines the action's logic.
      *
-     * @returns A new instance of Action, configured with the specified name, execution logic, and parameters.
+     * @returns A new instance of the Action class.
      */
-    static create<P = any, R = any>(name: string, exec: (params: P[]) => R, ...params: P[]): Action<P, R> {
-        return new Action<P, R>(name, params, exec);
+    static create<P, S, C>(name: string, params: P[], exec: (currentState: S, params: P[]) => IEffect<S, C>): Action<P, S, C> {
+        return new Action<P, S, C>(name, params, exec);
     }
-
 }
