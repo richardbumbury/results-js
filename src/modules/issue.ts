@@ -1,22 +1,24 @@
-import { IAction } from "../interfaces";
+import { Action } from "./action";
 import { Result } from "./result";
 
 /**
  * Extends the standard Error class to include additional context relevant to actions and results.
  * An Issue is used to represent errors or problems that arise from performing actions, encapsulating both the error details and the context in which the error occurred.
  *
- * @template T The type of the state associated with the action that caused the issue.
+ * @template S The type of the state on which the action is performed.
+ * @template P The type of parameters the action accepts.
+ * @template C The type of the content returned by the action's execution.
  */
-export class Issue<T, P, R> extends Error {
+export class Issue<S, P, C> extends Error {
     /**
      * The failed result associated with the issue.
      */
-    public result: Result<T, P, R>;
+    public result: Result<S, P, C>;
 
     /**
      * The action associated with this result.
      */
-    public action: IAction<P, R>;
+    public action: Action<P, S, C>;
 
     /**
      * Constructs a new Issue object representing the failed outcome of an action.
@@ -25,7 +27,7 @@ export class Issue<T, P, R> extends Error {
      * @param result The failed result associated with the issue.
      * @param action The action that led to this issue.
      */
-    constructor(message: string, result: Result<T, P, R>, action: IAction<P, R>) {
+    constructor(message: string, result: Result<S, P, C>, action: Action<P, S, C>) {
         super(message);
         if (!result.success) {
             this.name = this.constructor.name;
@@ -49,7 +51,7 @@ export class Issue<T, P, R> extends Error {
      *
      * @returns {Issue<T>} A new Issue instance encapsulating the error and the action.
      */
-    static fromAction<T, P, R>(action: IAction<P, R>, error: Error): Issue<T, P, R> {
-        return new Issue<T, P, R>(error.message, Result.failure<T, P, R>(action, [error], null, null), action);
+    static fromAction<S, P, C>(action: Action<P, S, C>, error: Error): Issue<S, P, C> {
+        return new Issue<S, P, C>(error.message, Result.failure<S, P, C>(action, [error], null, null), action);
     }
 }
