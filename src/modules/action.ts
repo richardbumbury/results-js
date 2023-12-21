@@ -39,7 +39,7 @@ export class Action<P = any, S = any, C = any> implements IAction<P, S, C> {
      * @param params Parameters required for executing the action.
      * @param exec The function that defines the execution logic of the action.
      */
-    constructor(name: string, params: P[], exec: (currentState: S, params: P[]) => IEffect<S, C>) {
+    private constructor(name: string, params: P[], exec: (currentState: S, params: P[]) => IEffect<S, C>) {
         this._name = name;
         this._params = params;
         this._exec = exec;

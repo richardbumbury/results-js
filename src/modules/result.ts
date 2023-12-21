@@ -60,7 +60,7 @@ export class Result<S, P, C> {
      * @param prevState The state before the action was applied.
      * @param nextState The state after the action was applied.
      */
-    constructor(success: boolean, content: C | null = null, errors: Error[] = [], action: Action<P, S, C>, prevState: S | null = null, nextState: S | null = null) {
+    private constructor(success: boolean, content: C | null = null, errors: Error[] = [], action: Action<P, S, C>, prevState: S | null = null, nextState: S | null = null) {
         this._success = success;
         this._content = content;
         this._errors = errors;
