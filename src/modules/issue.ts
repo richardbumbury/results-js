@@ -13,12 +13,12 @@ export class Issue<S, P, C> extends Error {
     /**
      * The failed result associated with the issue.
      */
-    public result: Result<S, P, C>;
+    public readonly result: Result<S, P, C>;
 
     /**
      * The action associated with this result.
      */
-    public action: Action<P, S, C>;
+    public readonly action: Action<P, S, C>;
 
     /**
      * Constructs a new Issue object representing the failed outcome of an action.
