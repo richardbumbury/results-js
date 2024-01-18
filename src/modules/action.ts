@@ -1,4 +1,4 @@
-import { Action as IAction, Effect as IEffect } from "../interfaces";
+import { Effect as IEffect } from "../interfaces";
 
 /**
  * Represents an executable action within an application.
@@ -7,7 +7,7 @@ import { Action as IAction, Effect as IEffect } from "../interfaces";
  * @template S The type of the state on which the action is performed.
  * @template C The type of the content returned by the action's execution.
  */
-export class Action<P = any, S = any, C = any> implements IAction<P, S, C> {
+export class Action<P = any, S = any, C = any> {
 
     /**
      * The name of the action, serving as an identifier.
