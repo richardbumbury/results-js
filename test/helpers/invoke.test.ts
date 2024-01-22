@@ -7,11 +7,13 @@ describe("invoke", () => {
     it("should return a Result object when an Action is executed successfully", async () => {
         const name = "TEST_ACTION";
         const params = [1, 2, 3];
-        const exec = (currentState: any, params: number[]): Effect<any, any> => {
-            const content = params.length;
-            const transform = (state: any) => ({ ...state, count: content });
+        const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+            return new Promise(resolve => {
+                const content = params.length;
+                const transform = (state: any) => ({ ...state, count: content });
 
-            return { content, transform };
+                resolve({ content, transform });
+            })
         };
 
         const action = Action.create(name, params, exec);
@@ -24,7 +26,7 @@ describe("invoke", () => {
     it("should return an Issue object when an error occurs", async () => {
         const name = "ERROR_ACTION";
         const params = [1, 2, 3];
-        const exec = (currentState: any, params: number[]): Effect<any, any> => {
+        const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
             throw new Error("Test error");
         };
 
@@ -38,11 +40,13 @@ describe("invoke", () => {
     it("should handle state transitions correctly", async () => {
         const name = "TRANSITION_ACTION";
         const params = [1, 2, 3];
-        const exec = (currentState: any, params: number[]): Effect<any, any> => {
-            const content = params.length;
-            const transform = (state: any) => ({ ...state, count: content });
+        const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+            return new Promise(resolve => {
+                const content = params.length;
+                const transform = (state: any) => ({ ...state, count: content });
 
-            return { content, transform };
+                resolve({ content, transform });
+            })
         };
 
         const action = Action.create(name, params, exec);
@@ -60,20 +64,22 @@ describe("invoke", () => {
     it("should handle invalid parameters correctly", async () => {
         const name = "INVALID_PARAMS_ACTION";
         const invalidParams = ["invalid"];
-        const exec = (currentState: any, params: any): Effect<any, any> => {
-            const isValidParams = (paramArray: any[]): paramArray is number[] => paramArray.every(param => typeof param === "number");
+        const exec = (currentState: any, params: any): Promise<Effect<any, any>> => {
+            return new Promise(resolve => {
+                const isValidParams = (paramArray: any[]): paramArray is number[] => paramArray.every(param => typeof param === "number");
 
-            if (!isValidParams(params)) {
-                throw new Error("Invalid parameters");
-            }
+                if (!isValidParams(params)) {
+                    throw new Error("Invalid parameters");
+                }
 
-            const content = params.length;
-            const transform = (state: any) => ({ ...state, count: content });
+                const content = params.length;
+                const transform = (state: any) => ({ ...state, count: content });
 
-            return { content, transform };
+                resolve({ content, transform });
+            })
         };
 
-        const action = new Action(name, invalidParams, exec);
+        const action = Action.create(name, invalidParams, exec);
         const state = { x: true };
 
         const result = await invoke(action, state);

@@ -7,11 +7,13 @@ describe("Issue", () => {
         it("should create an Issue with the correct error message", () => {
             const name = "TEST_ACTION";
             const params = [1, 2, 3];
-            const exec = (currentState: any, params: number[]): Effect<any, any> => {
-                const content = params.length;
-                const transform = (state: any) => ({ ...state, count: content });
+            const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+                return new Promise(resolve => {
+                    const content = params.length;
+                    const transform = (state: any) => ({ ...state, count: content });
 
-                return { content, transform };
+                    resolve({ content, transform });
+                })
             };
 
             const action = Action.create(name, params, exec);
@@ -24,11 +26,13 @@ describe("Issue", () => {
         it("should create an Issue with the correct action", () => {
             const name = "TEST_ACTION";
             const params = [1, 2, 3];
-            const exec = (currentState: any, params: number[]): Effect<any, any> => {
-                const content = params.length;
-                const transform = (state: any) => ({ ...state, count: content });
+            const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+                return new Promise(resolve => {
+                    const content = params.length;
+                    const transform = (state: any) => ({ ...state, count: content });
 
-                return { content, transform };
+                    resolve({ content, transform });
+                })
             };
 
             const action = Action.create(name, params, exec);
@@ -41,11 +45,13 @@ describe("Issue", () => {
         it("should create an Issue with a failure Result", () => {
             const name = "TEST_ACTION";
             const params = [1, 2, 3];
-            const exec = (currentState: any, params: number[]): Effect<any, any> => {
-                const content = params.length;
-                const transform = (state: any) => ({ ...state, count: content });
+            const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+                return new Promise(resolve => {
+                    const content = params.length;
+                    const transform = (state: any) => ({ ...state, count: content });
 
-                return { content, transform };
+                    resolve({ content, transform });
+                })
             };
 
             const action = Action.create(name, params, exec);

@@ -14,7 +14,7 @@ import { Action, Result, Issue } from "../modules";
  */
 export async function invoke<S, P, C>(action: Action<P, S, C>, currentState: S): Promise<Result<S, P, C> | Issue<S, P, C>> {
     try {
-        const effect = await action.exec(currentState, action.params);
+        const effect = await action.execute(currentState);
 
         const newState = effect.transform(currentState);
 

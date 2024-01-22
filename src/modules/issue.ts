@@ -27,7 +27,7 @@ export class Issue<S, P, C> extends Error {
      * @param result The failed result associated with the issue.
      * @param action The action that led to this issue.
      */
-    constructor(message: string, result: Result<S, P, C>, action: Action<P, S, C>) {
+    private constructor(message: string, result: Result<S, P, C>, action: Action<P, S, C>) {
         super(message);
         if (!result.success) {
             this.name = this.constructor.name;
@@ -51,7 +51,7 @@ export class Issue<S, P, C> extends Error {
      *
      * @returns {Issue<T>} A new Issue instance encapsulating the error and the action.
      */
-    static fromAction<S, P, C>(action: Action<P, S, C>, error: Error): Issue<S, P, C> {
+    public static fromAction<S, P, C>(action: Action<P, S, C>, error: Error): Issue<S, P, C> {
         return new Issue<S, P, C>(error.message, Result.failure<S, P, C>(action, [error], null, null), action);
     }
 }
