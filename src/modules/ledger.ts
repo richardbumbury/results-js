@@ -2,10 +2,10 @@ import { Effect } from "../interfaces";
 import { Action } from "./action";
 
 /**
- * The Roster class serves as a registry for exec functions associated with different action types.
+ * The Ledger class serves as a registry for exec functions associated with different action types.
  * It enables the management and rehydration of Action instances, particularly useful when dealing with serialization/deserialization processes where function references cannot be maintained.
  */
-export class Roster {
+export class Ledger {
     /**
      * A Map serving as a registry for exec functions. It maps action types (string) to their corresponding exec functions.
      * This registry is essential for the rehydration process of Action instances, allowing the reattachment of exec functions, which cannot be serialized/deserialized.
@@ -24,11 +24,11 @@ export class Roster {
      * @throws Error if the exec function for the given type is already registered.
      */
     public static set(type: string, exec: (currentState: any, params: any) => Promise<Effect<any, any>>): boolean {
-        if (Roster.registry.has(type)) {
+        if (Ledger.registry.has(type)) {
             throw new Error(`Exec function for action type '${type}' is already registered.`);
         }
 
-        Roster.registry.set(type, exec);
+        Ledger.registry.set(type, exec);
 
         return true;
     }
@@ -43,7 +43,7 @@ export class Roster {
      * @throws Error if the exec function for the given type is not registered.
      */
     public static get(type: string): (currentState: any, params: any) => Promise<Effect<any, any>> {
-        const exec = Roster.registry.get(type);
+        const exec = Ledger.registry.get(type);
         if (!exec) {
             throw new Error(`Exec function for action type '${type}' is not registered.`);
         }
@@ -60,7 +60,7 @@ export class Roster {
      * @returns The rehydrated action instance.
      */
     public static rehydrate<P, S, C>(action: Action<P, S, C>, type: string): Action<P, S, C> {
-        const exec = Roster.get(type);
+        const exec = Ledger.get(type);
 
         return action.attach(exec);
     }

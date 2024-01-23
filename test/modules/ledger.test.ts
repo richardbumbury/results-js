@@ -1,10 +1,10 @@
 import { expect } from "chai";
-import { Roster, Action } from "../../src/modules";
+import { Ledger, Action } from "../../src/modules";
 import { Effect } from "../../src/interfaces";
 
-describe("Roster", () => {
+describe("Ledger", () => {
     afterEach(() => {
-        Roster["registry"].clear();
+        Ledger["registry"].clear();
     });
 
     describe("set", () => {
@@ -19,7 +19,7 @@ describe("Roster", () => {
             };
 
 
-            const result = Roster.set("TEST_ACTION", exec);
+            const result = Ledger.set("TEST_ACTION", exec);
 
             expect(result).to.be.true;
         });
@@ -34,9 +34,9 @@ describe("Roster", () => {
                 })
             };
 
-            Roster.set("TEST_ACTION", exec);
+            Ledger.set("TEST_ACTION", exec);
 
-            expect(() => Roster.set("TEST_ACTION", exec)).to.throw(Error);
+            expect(() => Ledger.set("TEST_ACTION", exec)).to.throw(Error);
         });
 
         it("should return true upon successful registration", () => {
@@ -49,7 +49,7 @@ describe("Roster", () => {
                 })
             };
 
-            const result = Roster.set("TEST_ACTION", exec);
+            const result = Ledger.set("TEST_ACTION", exec);
 
             expect(result).to.be.true;
         });
@@ -66,17 +66,17 @@ describe("Roster", () => {
                 })
             };
 
-            Roster.set("TEST_ACTION", exec);
+            Ledger.set("TEST_ACTION", exec);
         });
 
         it("should retrieve an exec function for a registered action type", () => {
-            const exec = Roster.get("TEST_ACTION");
+            const exec = Ledger.get("TEST_ACTION");
 
             expect(exec).to.be.a("function");
         });
 
         it("should throw an error if the exec function for a given type is not registered", () => {
-            expect(() => Roster.get("MISSING_ACTION")).to.throw(Error);
+            expect(() => Ledger.get("MISSING_ACTION")).to.throw(Error);
         });
     });
 
@@ -95,13 +95,13 @@ describe("Roster", () => {
                 })
             };
 
-            Roster.set("TEST_ACTION", exec);
+            Ledger.set("TEST_ACTION", exec);
 
             action = Action.create(name, params, exec);
         });
 
         it("should correctly rehydrate an action with its associated exec function", async () => {
-            const _action = Roster.rehydrate(action, "TEST_ACTION");
+            const _action = Ledger.rehydrate(action, "TEST_ACTION");
             const currentState = { initial: true };
             const result = await _action.execute(currentState);
 
@@ -111,7 +111,7 @@ describe("Roster", () => {
         });
 
         it("should throw an error when trying to rehydrate with a non-registered type", () => {
-            expect(() => Roster.rehydrate(action, "MISSING_ACTION")).to.throw(Error);
+            expect(() => Ledger.rehydrate(action, "MISSING_ACTION")).to.throw(Error);
         });
     });
 });

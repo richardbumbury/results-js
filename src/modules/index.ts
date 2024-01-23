@@ -1,4 +1,4 @@
 export { Action } from "./action";
-export { Roster } from "./roster";
+export { Ledger } from "./ledger";
 export { Result } from "./result";
 export { Issue } from "./issue";
