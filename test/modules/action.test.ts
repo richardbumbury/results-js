@@ -134,7 +134,7 @@ describe("Action", () => {
         });
     });
 
-    describe(".execute", () => {
+    describe("execute", () => {
         it("should execute the action with the attached exec function", async () => {
             const name = "TEST_ACTION";
             const params = [1, 2, 3];

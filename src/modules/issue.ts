@@ -26,6 +26,8 @@ export class Issue<S, P, C> extends Error {
      * @param message The error message.
      * @param result The failed result associated with the issue.
      * @param action The action that led to this issue.
+     *
+     * @throws An Error is an attempt is made to create an issue from a successful result.
      */
     private constructor(message: string, result: Result<S, P, C>, action: Action<P, S, C>) {
         super(message);
