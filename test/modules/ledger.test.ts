@@ -76,7 +76,32 @@ describe("Ledger", () => {
         });
 
         it("should throw an error if the exec function for a given type is not registered", () => {
-            expect(() => Ledger.get("MISSING_ACTION")).to.throw(Error);
+            expect(() => Ledger.get("UNREGISTERED_ACTION")).to.throw(Error);
+        });
+    });
+
+    describe('has', () => {
+        it('should return false when the action type is not registered', () => {
+            const result = Ledger.has('UNREGISTERED_ACTION');
+
+            expect(result).to.be.false;
+        });
+
+        it('should return true when the action type is registered', () => {
+            const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+                return new Promise(resolve => {
+                    const content = params.length;
+                    const transform = (state: any) => ({ ...state, count: content });
+
+                    resolve({ content, transform });
+                })
+            };
+
+            Ledger.set("TEST_ACTION", exec);
+
+            const result = Ledger.has('TEST_ACTION');
+
+            expect(result).to.be.true;
         });
     });
 

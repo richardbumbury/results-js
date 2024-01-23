@@ -52,6 +52,17 @@ export class Ledger {
     }
 
     /**
+     * Checks whether an exec function for a specific action type is registered in the Ledger.
+     *
+     * @param type The action type to check.
+     * 
+     * @returns A Boolean indicating whether the exec function for the given type is registered.
+     */
+    public static has(type: string): boolean {
+        return this.registry.has(type);
+    }
+
+    /**
      * Rehydrates an Action instance with its associated exec function based on the action type.
      *
      * @param action The action instance to be rehydrated.

@@ -1,4 +1,5 @@
 import { ActionJSON, Effect } from "../interfaces";
+import { Ledger } from "./ledger";
 
 /**
  * Represents an executable action within an application.
@@ -83,6 +84,10 @@ export class Action<P = any, S = any, C = any> {
      * @returns A new instance of the Action class.
      */
     public static create<P, S, C>(name: string, params: P[], exec: (currentState: S, params: P[]) => Promise<Effect<S, C>>): Action<P, S, C> {
+        if (!Ledger.has(name)){
+            Ledger.set(name, exec)
+        }
+
         return new Action<P, S, C>(name, params, exec);
     }
 
