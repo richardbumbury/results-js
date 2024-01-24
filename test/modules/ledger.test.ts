@@ -13,6 +13,7 @@ describe("Ledger", () => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== 'object' || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
+
                         return;
                     }
 
@@ -39,6 +40,7 @@ describe("Ledger", () => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== 'object' || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
+
                         return;
                     }
 
@@ -67,6 +69,7 @@ describe("Ledger", () => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== 'object' || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
+
                         return;
                     }
 
@@ -95,6 +98,7 @@ describe("Ledger", () => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== 'object' || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
+
                         return;
                     }
 
@@ -129,6 +133,7 @@ describe("Ledger", () => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== 'object' || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
+
                         return;
                     }
 
@@ -163,6 +168,7 @@ describe("Ledger", () => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== 'object' || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
+
                         return;
                     }
 
@@ -199,6 +205,7 @@ describe("Ledger", () => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== 'object' || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
+
                         return;
                     }
 

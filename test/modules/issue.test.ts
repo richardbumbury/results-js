@@ -5,12 +5,11 @@ import { Action, Result, Issue } from "../../src/modules";
 describe("Issue", () => {
     describe("fromAction", () => {
         it("should create an Issue with the correct error message", () => {
-            const name = "TEST_ACTION";
-            const params = [1, 2, 3];
-            const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== 'object' || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
+
                         return;
                     }
 
@@ -25,9 +24,8 @@ describe("Issue", () => {
 
                     resolve({ content, transform });
                 })
-            };
+            });
 
-            const action = Action.create(name, params, exec);
             const error = new Error("Execution failed");
             const issue = Issue.fromAction(action, error);
 
@@ -35,12 +33,11 @@ describe("Issue", () => {
         });
 
         it("should create an Issue with the correct action", () => {
-            const name = "TEST_ACTION";
-            const params = [1, 2, 3];
-            const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== 'object' || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
+
                         return;
                     }
 
@@ -55,9 +52,8 @@ describe("Issue", () => {
 
                     resolve({ content, transform });
                 })
-            };
+            });
 
-            const action = Action.create(name, params, exec);
             const error = new Error("Execution failed");
             const issue = Issue.fromAction(action, error);
 
@@ -65,12 +61,11 @@ describe("Issue", () => {
         });
 
         it("should create an Issue with a failure Result", () => {
-            const name = "TEST_ACTION";
-            const params = [1, 2, 3];
-            const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== 'object' || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
+
                         return;
                     }
 
@@ -85,9 +80,8 @@ describe("Issue", () => {
 
                     resolve({ content, transform });
                 })
-            };
+            });
 
-            const action = Action.create(name, params, exec);
             const error = new Error("Execution failed");
             const issue = Issue.fromAction(action, error);
 
