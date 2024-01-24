@@ -8,7 +8,18 @@ describe("Action", () => {
             const name = "TEST_ACTION";
             const params = [1, 2, 3];
             const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise(resolve => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== 'object' || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
+                        return;
+                    }
+
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+
+                        return;
+                    }
+
                     const content = params.length;
                     const transform = (state: any) => ({ ...state, count: content });
 
@@ -47,7 +58,7 @@ describe("Action", () => {
 
             const action = Action.fromJSON(json);
 
-            await expect(action.execute({})).to.eventually.be.rejected;
+            await expect(action.execute({ value: 0 })).to.eventually.be.rejected;
         });
     });
 
@@ -56,7 +67,18 @@ describe("Action", () => {
             const name = "TEST_ACTION";
             const params = [1, 2, 3];
             const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise(resolve => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== 'object' || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
+                        return;
+                    }
+
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+
+                        return;
+                    }
+
                     const content = params.length;
                     const transform = (state: any) => ({ ...state, count: content });
 
@@ -78,7 +100,18 @@ describe("Action", () => {
             const name = "TEST_ACTION";
             const params = [1, 2, 3];
             const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise(resolve => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== 'object' || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
+                        return;
+                    }
+
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+
+                        return;
+                    }
+
                     const content = params.length;
                     const transform = (state: any) => ({ ...state, count: content });
 
@@ -96,7 +129,18 @@ describe("Action", () => {
             const name = "TEST_ACTION";
             const params = [1, 2, 3];
             const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise(resolve => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== 'object' || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
+                        return;
+                    }
+
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+
+                        return;
+                    }
+
                     const content = params.length;
                     const transform = (state: any) => ({ ...state, count: content });
 
@@ -115,21 +159,53 @@ describe("Action", () => {
         it("should replace an existing exec function with a new one", async () => {
             const name = "TEST_ACTION";
             const params = [1, 2, 3];
-            const execOne = async (currentState: any, params: number[]) => {
-                return { content: "one", transform: (state: any) => state };
+            const exec_1 = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== 'object' || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
+                        return;
+                    }
+
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+
+                        return;
+                    }
+
+                    const content = params.length;
+                    const transform = (state: any) => ({ ...state, count: content });
+
+                    resolve({ content, transform });
+                })
             };
 
-            const execTwo = async (currentState: any, params: number[]) => {
-                return { content: "two", transform: (state: any) => ({ ...state, updated: true }) };
+            const exec_2 = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== 'object' || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
+                        return;
+                    }
+
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+
+                        return;
+                    }
+
+                    const content = params.length + 1;
+                    const transform = (state: any) => ({ ...state, updated: true });
+
+                    resolve({ content, transform });
+                })
             };
 
-            const action = Action.create(name, params, execOne);
+            const action = Action.create(name, params, exec_1);
 
-            action.attach(execTwo)
+            action.attach(exec_2)
 
             const result = await action.execute({});
 
-            expect(result.content).to.equal("two");
+            expect(result.content).to.equal(params.length + 1);
             expect(result.transform({})).to.deep.equal({ updated: true });
         });
     });
@@ -139,8 +215,19 @@ describe("Action", () => {
             const name = "TEST_ACTION";
             const params = [1, 2, 3];
             const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise(resolve => {
-                    const content = "executed";
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== 'object' || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
+                        return;
+                    }
+
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+
+                        return;
+                    }
+
+                    const content = params.length;
                     const transform = (state: any) => ({ ...state, executed: true });
 
                     resolve({ content, transform });
@@ -149,10 +236,10 @@ describe("Action", () => {
 
             const action = Action.create(name, params, exec);
 
-            const currentState = { initial: true };
-            const result = await action.execute(currentState);
+            const state = { initial: true };
+            const result = await action.execute({ initial: true });
 
-            expect(result.transform(currentState)).to.deep.equal({ ...currentState, executed: true });
+            expect(result.transform(state)).to.deep.equal({ ...state, executed: true });
         });
     });
 });

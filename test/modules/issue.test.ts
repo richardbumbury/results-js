@@ -8,7 +8,18 @@ describe("Issue", () => {
             const name = "TEST_ACTION";
             const params = [1, 2, 3];
             const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise(resolve => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== 'object' || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
+                        return;
+                    }
+
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+
+                        return;
+                    }
+
                     const content = params.length;
                     const transform = (state: any) => ({ ...state, count: content });
 
@@ -20,14 +31,25 @@ describe("Issue", () => {
             const error = new Error("Execution failed");
             const issue = Issue.fromAction(action, error);
 
-            expect(issue.message).to.equal("Execution failed");
+            expect(issue.message).to.equal(error.message);
         });
 
         it("should create an Issue with the correct action", () => {
             const name = "TEST_ACTION";
             const params = [1, 2, 3];
             const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise(resolve => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== 'object' || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
+                        return;
+                    }
+
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+
+                        return;
+                    }
+
                     const content = params.length;
                     const transform = (state: any) => ({ ...state, count: content });
 
@@ -46,7 +68,18 @@ describe("Issue", () => {
             const name = "TEST_ACTION";
             const params = [1, 2, 3];
             const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise(resolve => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== 'object' || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
+                        return;
+                    }
+
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+
+                        return;
+                    }
+
                     const content = params.length;
                     const transform = (state: any) => ({ ...state, count: content });
 

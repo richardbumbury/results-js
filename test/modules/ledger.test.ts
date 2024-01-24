@@ -3,21 +3,31 @@ import { Ledger, Action } from "../../src/modules";
 import { Effect } from "../../src/interfaces";
 
 describe("Ledger", () => {
-    afterEach(() => {
+    beforeEach(() => {
         Ledger["registry"].clear();
     });
 
     describe("set", () => {
         it("should successfully register an exec function", () => {
             const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise(resolve => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== 'object' || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
+                        return;
+                    }
+
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+
+                        return;
+                    }
+
                     const content = params.length;
                     const transform = (state: any) => ({ ...state, count: content });
 
                     resolve({ content, transform });
                 })
             };
-
 
             const result = Ledger.set("TEST_ACTION", exec);
 
@@ -26,7 +36,18 @@ describe("Ledger", () => {
 
         it("should throw an error when registering a duplicate exec function", () => {
             const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise(resolve => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== 'object' || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
+                        return;
+                    }
+
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+
+                        return;
+                    }
+
                     const content = params.length;
                     const transform = (state: any) => ({ ...state, count: content });
 
@@ -38,27 +59,23 @@ describe("Ledger", () => {
 
             expect(() => Ledger.set("TEST_ACTION", exec)).to.throw(Error);
         });
-
-        it("should return true upon successful registration", () => {
-            const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise(resolve => {
-                    const content = params.length;
-                    const transform = (state: any) => ({ ...state, count: content });
-
-                    resolve({ content, transform });
-                })
-            };
-
-            const result = Ledger.set("TEST_ACTION", exec);
-
-            expect(result).to.be.true;
-        });
     });
 
     describe("get", () => {
-        beforeEach(() => {
+        it("should retrieve an exec function for a registered action type", () => {
             const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise(resolve => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== 'object' || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
+                        return;
+                    }
+
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+
+                        return;
+                    }
+
                     const content = params.length;
                     const transform = (state: any) => ({ ...state, count: content });
 
@@ -67,15 +84,35 @@ describe("Ledger", () => {
             };
 
             Ledger.set("TEST_ACTION", exec);
-        });
 
-        it("should retrieve an exec function for a registered action type", () => {
-            const exec = Ledger.get("TEST_ACTION");
+            const _exec = Ledger.get("TEST_ACTION");
 
-            expect(exec).to.be.a("function");
+            expect(_exec).to.be.a("function");
         });
 
         it("should throw an error if the exec function for a given type is not registered", () => {
+            const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== 'object' || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
+                        return;
+                    }
+
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+
+                        return;
+                    }
+
+                    const content = params.length;
+                    const transform = (state: any) => ({ ...state, count: content });
+
+                    resolve({ content, transform });
+                })
+            };
+
+            Ledger.set("TEST_ACTION", exec);
+
             expect(() => Ledger.get("UNREGISTERED_ACTION")).to.throw(Error);
         });
     });
@@ -89,7 +126,18 @@ describe("Ledger", () => {
 
         it('should return true when the action type is registered', () => {
             const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise(resolve => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== 'object' || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
+                        return;
+                    }
+
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+
+                        return;
+                    }
+
                     const content = params.length;
                     const transform = (state: any) => ({ ...state, count: content });
 
@@ -108,11 +156,22 @@ describe("Ledger", () => {
     describe("rehydrate", () => {
         let action: Action<any, any, any>;
 
-        beforeEach(() => {
+        it("should correctly rehydrate an action with its associated exec function", async () => {
             const name = "TEST_ACTION";
             const params = [1, 2, 3];
             const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise(resolve => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== 'object' || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
+                        return;
+                    }
+
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+
+                        return;
+                    }
+
                     const content = params.length;
                     const transform = (state: any) => ({ ...state, effect: true });
 
@@ -123,19 +182,43 @@ describe("Ledger", () => {
             Ledger.set("TEST_ACTION", exec);
 
             action = Action.create(name, params, exec);
-        });
 
-        it("should correctly rehydrate an action with its associated exec function", async () => {
             const _action = Ledger.rehydrate(action, "TEST_ACTION");
-            const currentState = { initial: true };
-            const result = await _action.execute(currentState);
+            const state = { initial: true };
+            const result = await _action.execute(state);
 
-            const nextState = { ...currentState, effect: true };
+            const nextState = { ...state, effect: true };
 
-            expect(result.transform(currentState)).to.deep.equal(nextState);
+            expect(result.transform(state)).to.deep.equal(nextState);
         });
 
         it("should throw an error when trying to rehydrate with a non-registered type", () => {
+            const name = "TEST_ACTION";
+            const params = [1, 2, 3];
+            const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== 'object' || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
+                        return;
+                    }
+
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+
+                        return;
+                    }
+
+                    const content = params.length;
+                    const transform = (state: any) => ({ ...state, count: content });
+
+                    resolve({ content, transform });
+                })
+            };
+
+            Ledger.set("TEST_ACTION", exec);
+
+            action = Action.create(name, params, exec);
+
             expect(() => Ledger.rehydrate(action, "MISSING_ACTION")).to.throw(Error);
         });
     });
