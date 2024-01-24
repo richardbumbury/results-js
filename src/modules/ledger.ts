@@ -55,7 +55,7 @@ export class Ledger {
      * Checks whether an exec function for a specific action type is registered in the Ledger.
      *
      * @param type The action type to check.
-     * 
+     *
      * @returns A Boolean indicating whether the exec function for the given type is registered.
      */
     public static has(type: string): boolean {
