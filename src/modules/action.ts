@@ -48,29 +48,29 @@ export class Action<P = any, S = any, C = any> {
     }
 
     /**
-     * Gets the name of the action.
+     * Provides access to the name of the action.
      *
      * @returns The name of the action.
      */
-    get name(): string {
+    public get name(): string {
         return this._name;
     }
 
     /**
-     * Gets the parameters for the action.
+     * Provides access to the parameters for the action.
      *
      * @returns An array of parameters.
      */
-    get params(): P[] {
+    public get params(): P[] {
         return this._params;
     }
 
     /**
-     * Gets the timestamp marking the creation of the action.
+     * Provides access to the timestamp marking the creation of the action.
      *
      * @returns The timestamp of the action's creation.
      */
-    get timestamp(): Date {
+    public get timestamp(): Date {
         return this._timestamp;
     }
 
