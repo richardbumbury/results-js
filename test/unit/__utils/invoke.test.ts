@@ -1,7 +1,7 @@
 import { expect } from "chai";
-import { invoke } from "../../src/helpers";
-import { Effect } from "../../src/interfaces";
-import { Action, Result, Issue } from "../../src/modules";
+import { invoke } from "../../../src/__utils";
+import { Effect } from "../../../src/__interfaces";
+import { Action, Result, Issue } from "../../../src/__core";
 
 describe("invoke", () => {
     it("should return a Result object when an Action is executed successfully", async () => {

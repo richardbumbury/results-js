@@ -1,4 +1,4 @@
-import { ActionJSON, Effect } from "../interfaces";
+import { ActionJSON, Effect } from "../__interfaces";
 import { Ledger } from "./ledger";
 
 /**

@@ -1,5 +1,5 @@
 export { Action } from "./action";
+export { Issue } from "./issue";
 export { Ledger } from "./ledger";
 export { Result } from "./result";
-export { Issue } from "./issue";
 export { Store } from "./store";

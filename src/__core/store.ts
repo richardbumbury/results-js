@@ -1,10 +1,10 @@
 import { randomUUID as uuid } from "crypto";
-import { Digest } from "../interfaces";
+import { invoke } from "../__utils";
+import { Digest } from "../__interfaces";
 import { Action } from "./action";
 import { Ledger } from "./ledger";
 import { Result } from "./result";
 import { Issue } from "./issue";
-import { invoke } from "../helpers";
 
 /**
  * Store class that acts as a central state manager for an application.

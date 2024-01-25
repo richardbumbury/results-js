@@ -1,4 +1,4 @@
-import { Action, Result, Issue } from "../modules";
+import { Action, Result, Issue } from "../__core";
 
 /**
  * Executes an Action and returns a Result.

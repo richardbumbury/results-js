@@ -1,7 +1,7 @@
 import sinon from "sinon";
 import { expect } from "chai";
-import { Effect } from "../../src/interfaces";
-import { Store, Action, Result, Issue } from "../../src/modules";
+import { Effect } from "../../../src/__interfaces";
+import { Store, Action, Result, Issue } from "../../../src/__core";
 
 describe("Store", () => {
     describe("create", () => {
@@ -16,20 +16,17 @@ describe("Store", () => {
         });
 
         it("should throw an error for invalid params", () => {
-            const state = { value: 0 };
-
-            expect(() => Store.create(state, 0)).to.throw(Error);
-            expect(() => Store.create(state, -1)).to.throw(Error);
-            expect(() => Store.create(state, 100001)).to.throw(Error);
-            expect(() => Store.create(state, 50, 3599999)).to.throw(Error);
-            expect(() => Store.create(state, 50, 604800001)).to.throw(Error);
+            expect(() => Store.create({ value: 0 }, 0)).to.throw(Error);
+            expect(() => Store.create({ value: 0 }, -1)).to.throw(Error);
+            expect(() => Store.create({ value: 0 }, 100001)).to.throw(Error);
+            expect(() => Store.create({ value: 0 }, 50, 3599999)).to.throw(Error);
+            expect(() => Store.create({ value: 0 }, 50, 604800001)).to.throw(Error);
         });
     });
 
     describe("add", () => {
         it("should add and apply an action successfully", async () => {
-            const state = { value: 0 };
-            const store = Store.create(state);
+            const store = Store.create({ value: 0 });
             const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
@@ -53,7 +50,7 @@ describe("Store", () => {
 
             const callback = () => Promise.resolve(undefined);
 
-            const result = await store.add(action, state, callback);
+            const result = await store.add(action, store.state, callback);
             expect(result).to.be.instanceOf(Result);
 
             if (result instanceof Result) {
@@ -65,8 +62,7 @@ describe("Store", () => {
 
 
         it("should create a new digest after reaching the digest interval", async () => {
-            const state = { value: 0 };
-            const store = Store.create(state, 50, 86400000, undefined, 1);
+            const store = Store.create({ value: 0 }, 50, 86400000, undefined, 1);
             const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
@@ -90,13 +86,12 @@ describe("Store", () => {
 
             const callback = sinon.spy();
 
-            await store.add(action, state, callback);
+            await store.add(action, store.state, callback);
             expect(callback).to.have.been.called;
         });
 
         it("should handle action application failure", async () => {
-            const state = { value: 0 };
-            const store = Store.create(state);
+            const store = Store.create({ value: 0 });
             const action = Action.create("FAIL_ACTION", [-1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
@@ -123,16 +118,15 @@ describe("Store", () => {
 
             console.error = () => {};
 
-            const result = await store.add(action, state, callback);
+            const issue = await store.add(action, store.state, callback);
 
             console.error = original;
 
-            expect(result).to.be.instanceOf(Issue);
+            expect(issue).to.be.instanceOf(Issue);
         });
 
         it("should update the store state with the outcome of the action", async () => {
-            const state = { value: 0 };
-            const store = Store.create(state);
+            const store = Store.create({ value: 0 });
             const params = [1, 2, 3];
             const action = Action.create("TEST_ACTION", params, async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
@@ -156,9 +150,9 @@ describe("Store", () => {
             });
 
             const callback = () => Promise.resolve(undefined);
-            const nextState = { ...state, count: params.length };
+            const nextState = { ...store.state, count: params.length };
 
-            await store.add(action, state, callback);
+            await store.add(action, store.state, callback);
 
             expect(store.state).to.deep.equal(nextState);
         });
@@ -167,8 +161,7 @@ describe("Store", () => {
     describe("rerun", () => {
         it("should successfully rerun an action", async () => {
             const index = 0;
-            const state = { value: 0 };
-            const store = Store.create(state);
+            const store = Store.create({ value: 0 });
             const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
@@ -192,17 +185,16 @@ describe("Store", () => {
 
             const callback = () => Promise.resolve(undefined);
 
-            await store.add(action, state, callback);
+            await store.add(action, store.state, callback);
 
-            const result = await store.rerun(index, state, callback);
+            const result = await store.rerun(index, store.state, callback);
 
             expect(result).to.be.instanceOf(Result);
         });
 
         it("should create a new digest after reaching the digest interval", async () => {
             const index = 1;
-            const state = { value: 0 };
-            const store = Store.create(state, 50, 86400000, undefined, 1);
+            const store = Store.create({ value: 0 }, 50, 86400000, undefined, 1);
             const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
@@ -226,16 +218,15 @@ describe("Store", () => {
 
             const callback = sinon.spy();
 
-            await store.add(action, state, callback);
-            await store.rerun(index, state, callback);
+            await store.add(action, store.state, callback);
+            await store.rerun(index, store.state, callback);
 
             expect(callback).to.have.been.calledOnce;
         });
 
         it("should handle action rerun failure", async () => {
             const index = 1;
-            const state = { value: 0 };
-            const store = Store.create(state);
+            const store = Store.create({ value: 0 });
             const action = Action.create("FAIL_ACTION", [-1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
@@ -257,18 +248,20 @@ describe("Store", () => {
                 })
             });
             const callback = () => Promise.resolve(undefined);
+            const original = console.error;
 
-            await store.add(action, state);
+            console.error = () => {};
+            await store.add(action, store.state);
+            console.error = original;
 
-            const result = await store.rerun(index, state, callback);
+            const issue = await store.rerun(index, store.state, callback);
 
-            expect(result).to.be.instanceOf(Issue);
+            expect(issue).to.be.instanceOf(Issue);
         });
 
         it("should maintain state consistency after rerun", async () => {
             const index = 1;
-            const state = { value: 0 };
-            const store = Store.create(state);
+            const store = Store.create({ value: 0 });
             const params = [1, 2, 3];
             const action = Action.create("TEST_ACTION", params, async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
@@ -293,10 +286,10 @@ describe("Store", () => {
 
             const callback = () => Promise.resolve(undefined);
 
-            await store.add(action, state, callback);
-            await store.rerun(index, state, callback);
+            await store.add(action, store.state, callback);
+            await store.rerun(index, store.state, callback);
 
-            const nextState = { ...state, count: params.length };
+            const nextState = { ...store.state, count: params.length };
 
             expect(store.state).to.deep.equal(nextState);
         });
@@ -304,8 +297,7 @@ describe("Store", () => {
 
     describe("reset", () => {
         it("should successfully reset to previous state", async () => {
-            const state = { value: 0 };
-            const store = Store.create(state);
+            const store = Store.create({ value: 0 });
             const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
@@ -329,16 +321,15 @@ describe("Store", () => {
 
             const callback = () => Promise.resolve(undefined);
 
-            await store.add(action, state, callback);
+            await store.add(action, store.state, callback);
 
-            const result = await store.reset(state, callback);
+            const result = await store.reset(store.state, callback);
 
             expect(result).to.be.instanceOf(Result);
         });
 
         it("should create a new digest after reaching the digest interval", async () => {
-            const state = { value: 0 };
-            const store = Store.create(state, 50, 86400000, undefined, 1);
+            const store = Store.create({ value: 0 }, 50, 86400000, undefined, 1);
             const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
@@ -362,24 +353,22 @@ describe("Store", () => {
 
             const callback = sinon.spy();
 
-            await store.add(action, state, callback);
-            await store.reset(state, callback);
+            await store.add(action, store.state, callback);
+            await store.reset(store.state, callback);
 
             expect(callback).to.have.been.calledTwice;
         });
 
         it("should return an Issue if there are no actions to reset", async () => {
-            const state = { value: 0 };
-            const store = Store.create(state);
+            const store = Store.create({ value: 0 });
             const callback = () => Promise.resolve(undefined);
-            const result = await store.reset(state, callback);
+            const result = await store.reset(store.state, callback);
 
             expect(result).to.be.instanceOf(Issue);
         });
 
         it("should handle action rerun failure", async () => {
-            const state = { value: 0 };
-            const store = Store.create(state);
+            const store = Store.create({ value: 0 });
             const action = Action.create("FAIL_ACTION", [-1, 2, 3], (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
@@ -405,21 +394,18 @@ describe("Store", () => {
             const original = console.error;
 
             console.error = () => {};
-
-            await store.add(action, state, callback);
-
+            await store.add(action, store.state, callback);
             console.error = original;
 
-            const result = await store.reset(state, callback);
+            const issue = await store.reset(store.state, callback);
 
-            expect(result).to.be.instanceOf(Issue);
+            expect(issue).to.be.instanceOf(Issue);
         });
     });
 
     describe("retry", () => {
         it("should successfully retry the next action", async () => {
-            const state = { value: 0 };
-            const store = Store.create(state);
+            const store = Store.create({ value: 0 });
             const success = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
@@ -464,24 +450,21 @@ describe("Store", () => {
 
             const callback = () => Promise.resolve(undefined);
 
-            await store.add(success, state, callback);
+            await store.add(success, store.state, callback);
 
             const original = console.error;
 
             console.error = () => {};
-
-            await store.add(failure, state, callback);
-
+            await store.add(failure, store.state, callback);
             console.error = original;
 
-            const result = await store.retry(state, callback);
+            const issue = await store.retry(store.state, callback);
 
-            expect(result).to.be.instanceOf(Issue);
+            expect(issue).to.be.instanceOf(Issue);
         });
 
         it("should create a new digest after reaching the digest interval", async () => {
-            const state = { value: 0 };
-            const store = Store.create(state, 50, 86400000, undefined, 1);
+            const store = Store.create({ value: 0 }, 50, 86400000, undefined, 1);
             const success = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
@@ -526,33 +509,28 @@ describe("Store", () => {
 
             const callback = sinon.spy();
 
-            await store.add(success, state, callback);
+            await store.add(success, store.state, callback);
 
             const original = console.error;
 
             console.error = () => {};
-
-            await store.add(failure, state, callback);
-
+            await store.add(failure, store.state, callback);
             console.error = original;
-
-            await store.retry(state, callback);
+            await store.retry(store.state, callback);
 
             expect(callback).to.have.been.calledOnce;
         });
 
         it("should return an Issue if there are no actions to retry", async () => {
-            const state = { value: 0 };
-            const store = Store.create(state);
+            const store = Store.create({ value: 0 });
             const callback = () => Promise.resolve(undefined);
-            const result = await store.retry(state, callback);
+            const result = await store.retry(store.state, callback);
 
             expect(result).to.be.instanceOf(Issue);
         });
 
         it("should handle action retry failure", async () => {
-            const state = { value: 0 };
-            const store = Store.create(state);
+            const store = Store.create({ value: 0 });
             const action = Action.create("FAIL_ACTION", [-1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
@@ -579,14 +557,12 @@ describe("Store", () => {
             const original = console.error;
 
             console.error = () => {};
-
-            await store.add(action, state, callback);
-
+            await store.add(action, store.state, callback);
             console.error = original;
 
-            const result = await store.retry(state, callback);
+            const issue = await store.retry(store.state, callback);
 
-            expect(result).to.be.instanceOf(Issue);
+            expect(issue).to.be.instanceOf(Issue);
         });
     });
 
@@ -720,8 +696,8 @@ describe("Store", () => {
         });
     });
 
-    describe('Store.subscriber.watch', () => {
-        it('should successfully add a watch subscriber and notify it on matching action', () => {
+    describe("subscriber.watch", () => {
+        it("should successfully add a watch subscriber and notify it on matching action", () => {
             const store = Store.create({ value: 0 });
             const callbank = sinon.spy();
             const filter = (action: any, newState: any) => action.name === "TEST_ACTION";
@@ -779,8 +755,8 @@ describe("Store", () => {
         });
     });
 
-    describe('Store.middleware.add', () => {
-        it('should successfully add a middleware', () => {
+    describe("middleware.add", () => {
+        it("should successfully add a middleware", () => {
             const store = Store.create({ value: 0 });
             const middleware = sinon.spy();
             const result = store.middleware.add(middleware);
@@ -788,102 +764,102 @@ describe("Store", () => {
             expect(result).to.be.true;
         });
 
-        it('should successfully add a middleware with a filter', () => {
+        it("should successfully add a middleware with a filter", () => {
             const store = Store.create({ value: 0 });
             const middleware = sinon.spy();
-            const filter = (action: any) => action.name === 'TEST_ACTION';
+            const filter = (action: any) => action.name === "TEST_ACTION";
             const result = store.middleware.add(middleware, filter);
 
             expect(result).to.be.true;
         });
+    });
 
-        describe('Store.middleware.apply', () => {
-            it('should apply all registered middlewares to an action', () => {
-                const store = Store.create({ value: 0 });
-                const middlewareFunction = sinon.spy();
-                store.middleware.add(middlewareFunction);
+    describe("middleware.apply", () => {
+        it("should apply all registered middlewares to an action", () => {
+            const store = Store.create({ value: 0 });
+            const middlewareFunction = sinon.spy();
+            store.middleware.add(middlewareFunction);
 
-                const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                    return new Promise((resolve, reject) => {
-                        if (typeof currentState !== "object" || currentState === null) {
-                            reject(new Error("Invalid state: State must be a non-null object"));
+            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== "object" || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
 
-                            return;
-                        }
+                        return;
+                    }
 
-                        if (params.some(param => param < 0)) {
-                            reject(new Error("Invalid parameters: Negative values are not allowed"));
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
 
-                            return;
-                        }
+                        return;
+                    }
 
-                        const content = params.length;
-                        const transform = (state: any) => ({ ...state, count: content });
+                    const content = params.length;
+                    const transform = (state: any) => ({ ...state, count: content });
 
-                        resolve({ content, transform });
-                    })
-                });
-
-                const result = store.middleware.apply(action);
-
-                expect(middlewareFunction).to.have.been.calledWith(action);
-                expect(result).to.be.true;
+                    resolve({ content, transform });
+                })
             });
 
-            it('should only apply middlewares that match the filter', () => {
-                const store = Store.create({ value: 0 });
-                const middlewareFunction = sinon.spy();
-                const filterFunction = (action: any) => action.name === 'TEST_ACTION';
-                store.middleware.add(middlewareFunction, filterFunction);
+            const result = store.middleware.apply(action);
 
-                const success = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                    return new Promise((resolve, reject) => {
-                        if (typeof currentState !== "object" || currentState === null) {
-                            reject(new Error("Invalid state: State must be a non-null object"));
+            expect(middlewareFunction).to.have.been.calledWith(action);
+            expect(result).to.be.true;
+        });
 
-                            return;
-                        }
+        it("should only apply middlewares that match the filter", () => {
+            const store = Store.create({ value: 0 });
+            const middlewareFunction = sinon.spy();
+            const filterFunction = (action: any) => action.name === "TEST_ACTION";
+            store.middleware.add(middlewareFunction, filterFunction);
 
-                        if (params.some(param => param < 0)) {
-                            reject(new Error("Invalid parameters: Negative values are not allowed"));
+            const success = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== "object" || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
 
-                            return;
-                        }
+                        return;
+                    }
 
-                        const content = params.length;
-                        const transform = (state: any) => ({ ...state, count: content });
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
 
-                        resolve({ content, transform });
-                    })
-                });
+                        return;
+                    }
 
-                const failure = Action.create("FAIL_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                    return new Promise((resolve, reject) => {
-                        if (typeof currentState !== "object" || currentState === null) {
-                            reject(new Error("Invalid state: State must be a non-null object"));
+                    const content = params.length;
+                    const transform = (state: any) => ({ ...state, count: content });
 
-                            return;
-                        }
-
-                        if (params.some(param => param < 0)) {
-                            reject(new Error("Invalid parameters: Negative values are not allowed"));
-
-                            return;
-                        }
-
-                        const content = params.length;
-                        const transform = (state: any) => ({ ...state, count: content });
-
-                        resolve({ content, transform });
-                    })
-                });
-
-                store.middleware.apply(success);
-                store.middleware.apply(failure);
-
-                expect(middlewareFunction).to.have.been.calledOnceWith(success);
-                expect(middlewareFunction).not.to.have.been.calledWith(failure);
+                    resolve({ content, transform });
+                })
             });
+
+            const failure = Action.create("FAIL_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== "object" || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
+
+                        return;
+                    }
+
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+
+                        return;
+                    }
+
+                    const content = params.length;
+                    const transform = (state: any) => ({ ...state, count: content });
+
+                    resolve({ content, transform });
+                })
+            });
+
+            store.middleware.apply(success);
+            store.middleware.apply(failure);
+
+            expect(middlewareFunction).to.have.been.calledOnceWith(success);
+            expect(middlewareFunction).not.to.have.been.calledWith(failure);
         });
     });
 });

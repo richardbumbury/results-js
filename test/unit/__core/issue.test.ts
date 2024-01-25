@@ -1,6 +1,6 @@
 import { expect } from "chai";
-import { Effect } from "../../src/interfaces";
-import { Action, Result, Issue } from "../../src/modules";
+import { Effect } from "../../../src/__interfaces";
+import { Action, Result, Issue } from "../../../src/__core";
 
 describe("Issue", () => {
     describe("fromAction", () => {

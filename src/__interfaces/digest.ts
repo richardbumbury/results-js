@@ -1,5 +1,4 @@
-import { Action } from "../modules";
-
+import { Action } from "../__core";
 
 /**
  * Represents a digest of the application's state at a specific point in time.
@@ -9,7 +8,7 @@ import { Action } from "../modules";
  */
 export interface Digest<S> {
     /**
-     * A universally unique identifier (UUID) for the digest. 
+     * A universally unique identifier (UUID) for the digest.
      * This identifier is used to uniquely distinguish this digest from others.
      */
     id: string;
