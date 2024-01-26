@@ -5,7 +5,7 @@
  *
  * @template P The type of parameters the action accepts, reflected in the serialized data.
  */
-export interface ActionJSON<P = any> {
+export interface ActionJSON<P> {
     /**
      * The name of the action, serving as a unique identifier.
      * This property is used to identify the action and is typically set during action creation.

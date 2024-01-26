@@ -8,7 +8,7 @@ import { Ledger } from "./ledger";
  * @template S The type of the state on which the action is performed.
  * @template C The type of the content returned by the action's execution.
  */
-export class Action<P = any, S = any, C = any> {
+export class Action<P , S , C > {
 
     /**
      * The name of the action, serving as an identifier.
@@ -113,7 +113,7 @@ export class Action<P = any, S = any, C = any> {
      *
      * @returns An object containing the action's serializable data: name, parameters, and timestamp.
      */
-    public toJSON(): ActionJSON {
+    public toJSON(): ActionJSON<P> {
         return { name: this._name, params: this._params, timestamp: this._timestamp };
     }
 
