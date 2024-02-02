@@ -158,9 +158,7 @@ export class Action<P , S , C > {
      * @returns The instance of the Action class.
      */
     public attach(exec: (currentState: S, params: P[]) => Promise<Effect<S, C>>): this {
-        this._exec = async (currentState, params) => {
-            return exec(currentState, params);
-        };
+        this._exec = async (currentState, params) => exec(currentState, params);
 
         return this;
     }
