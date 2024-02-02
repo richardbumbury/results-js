@@ -166,6 +166,37 @@ describe("Action", () => {
         });
     });
 
+    describe('toString', function () {
+        it('should return the correct string representation for an action', function () {
+            const name = "TEST_ACTION";
+            const params = [1, 2, 3];
+            const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== 'object' || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
+
+                        return;
+                    }
+
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+
+                        return;
+                    }
+
+                    const content = params.length;
+                    const transform = (state: any) => ({ ...state, count: content });
+
+                    resolve({ content, transform });
+                })
+            };
+
+            const action = Action.create(name, params, exec);
+
+            expect(action.toString()).to.include(action.name);
+        });
+    });
+
     describe("attach", () => {
         it("should replace an existing exec function with a new one", async () => {
             const name = "TEST_ACTION";

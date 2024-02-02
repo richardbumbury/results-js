@@ -150,6 +150,15 @@ export class Action<P , S , C > {
     }
 
     /**
+     * Converts the action into a string representation for debugging or logging purposes.
+     *
+     * @returns A string representation of the action.
+     */
+    toString(): string {
+        return `Action: ${this._name}`;
+    }
+
+    /**
      * Attaches an execution function to the action.
      * This function defines the asynchronous logic to be executed when the action is invoked.
      *
