@@ -132,9 +132,9 @@ export class Action<P , S , C > {
      * @returns A new instance of the Action class with a new ID, the provided correlation ID (if any), name, params, and a new timestamp.
      */
     public static fromJSON<P, S, C>(json: { name: string; params: P[]; correlationId?: string }): Action<P, S, C> {
-        return new Action<P, S, C>(json.name, json.params, async () => {
-            throw new Error("Exec function not implemented. Attach exec function using attach().");
-        }, json.correlationId);
+        const exec = async () => { throw new Error("Exec function not implemented. Attach exec function using attach().") }
+
+        return new Action<P, S, C>(json.name, json.params, exec, json.correlationId);
     }
 
 
