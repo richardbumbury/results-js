@@ -207,7 +207,7 @@ export class Result<S, P, C> {
      * @param prevState The state before the action was applied.
      * @param nextState The state after the action was applied.
      *
-     * @returns {Result<S, C, P>} An instance of Result representing a successful action outcome.
+     * @returns An instance of Result representing a successful action outcome.
      */
     public static success<S, P, C>(action: Action<P, S, C>, content: C, prevState: S | null, nextState: S): Result<S, P, C> {
         return new Result<S, P, C>(true, content, [], action, prevState, nextState, action.correlationId);
@@ -223,7 +223,7 @@ export class Result<S, P, C> {
      * @param prevState The state before the action was applied.
      * @param nextState The state after the action was attempted, null if the state is unchanged.
      *
-     * @returns {Result<S, P, C>} An instance of Result representing a failed action outcome.
+     * @returns An instance of Result representing a failed action outcome.
      */
     public static failure<S, P, C>(action: Action<P, S, C>, errors: Error[], prevState: S | null, nextState: S | null = null): Result<S, P, C> {
         return new Result<S, P, C>(false, null, errors, action, prevState, nextState, action.correlationId);
@@ -256,7 +256,7 @@ export class Result<S, P, C> {
      *
      * @param f A transformation function to apply to the content of this result.
      *
-     * @returns {Result<S, P, U>} A new Result instance with the transformed content if successful, or the original failure with its errors if not successful.
+     * @returns A new Result instance with the transformed content if successful, or the original failure with its errors if not successful.
      */
     public map<U>(f: (content: C) => U): Result<S, P, U> {
         if (this._success) {
@@ -277,7 +277,7 @@ export class Result<S, P, C> {
      *
      * @param f A function that takes the successful content (which may be null) and returns a new Result with potentially different content type.
      *
-     * @returns {Result<S, P, U>} A new Result instance with the transformed content if successful, or the original failure with its errors if not successful.
+     * @returns A new Result instance with the transformed content if successful, or the original failure with its errors if not successful.
      */
     public bind<U>(f: (content: C) => Result<S, P, U>): Result<S, P, U> {
         if (this._success) {
@@ -296,7 +296,7 @@ export class Result<S, P, C> {
      * @param onSuccess A function to be called if this result is successful. It takes the content (which may be null) and returns a new value.
      * @param onFailure A function to be called if this result is a failure. It takes the array of errors and returns a new value.
      *
-     * @returns {U} The result of calling either the onSuccess or onFailure function, based on the success status of this result. If the content of a successful result is null, onSuccess is still called with null casted to type C.
+     * @returns The result of calling either the onSuccess or onFailure function, based on the success status of this result. If the content of a successful result is null, onSuccess is still called with null casted to type C.
      */
     public fold<U>(onSuccess: (content: C) => U, onFailure: (errors: Error[]) => U): U {
         if (this._success) {
@@ -312,7 +312,7 @@ export class Result<S, P, C> {
      *
      * @param f A function that takes the array of errors and returns a new content value of the same type as the original content.
      *
-     * @returns {Result<S, P, C>} A successful Result with new content if the original Result was a failure, otherwise returns the original Result.
+     * @returns A successful Result with new content if the original Result was a failure, otherwise returns the original Result.
      */
     public recover(f: (errors: Error[]) => C): Result<S, P, C> {
         if (this._success) {
@@ -328,7 +328,7 @@ export class Result<S, P, C> {
      *
      * @param f A function that returns an alternative Result.
      *
-     * @returns {Result<S, P, C>} The current Result if it's successful, or the Result returned by function f if it's a failure.
+     * @returns The current Result if it's successful, or the Result returned by function f if it's a failure.
      */
     public orElse(f: () => Result<S, P, C>): Result<S, P, C> {
         return this._success ? this : f();
