@@ -22,8 +22,8 @@ export class Action<P , S , C > {
 
     /**
      * The function that encapsulates the operation the action will execute.
-     * It takes the current state and parameters, and returns the new state resulting from the action.
-     * Supports asynchronous operations, as indicated by the possible Promise return type.
+     * It takes the current state and parameters, and returns a Promise that resolves to an Effect.
+     * The Effect represents the effect of an action's execution, including its direct outcome and impact on the state.
      */
     private _exec: (currentState: S, params: P[]) => Promise<Effect<S, C>>;
 
@@ -138,17 +138,17 @@ export class Action<P , S , C > {
      * This method should be called to trigger the execution of the action.
      * It ensures that the exec function has been attached and then invokes it with the current state and predefined parameters.
      *
-     * @param currentState The current state of the application or context in which the action is executed.
+     * @param state The current state of the application or context in which the action is executed.
      *
      * @returns A Promise that resolves to an Effect, representing the effect of the action on the state.
      *
      * @throws An error if the exec function has not been attached to the action.
      */
-    public async execute(currentState: S): Promise<Effect<S, C>> {
+    public async execute(state: S): Promise<Effect<S, C>> {
         if (!this._exec) {
             throw new Error("Exec function not implemented. Attach exec function using attach().");
         }
 
-        return this._exec(currentState, this._params);
+        return this._exec(state, this._params);
     }
 }
