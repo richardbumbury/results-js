@@ -1,3 +1,4 @@
+import { randomUUID as uuid } from "crypto";
 import { Action } from "./action";
 
 /**
@@ -10,6 +11,16 @@ import { Action } from "./action";
  *
  */
 export class Result<S, P, C> {
+    /**
+     * A unique identifier for each result instance.
+     */
+    private readonly _id: string;
+
+    /**
+     * An optional identifier used to correlate this action with other related actions.
+     */
+    private readonly _correlationId?: string;
+
     /**
      * Indicates whether the action was successful.
      */
@@ -60,7 +71,9 @@ export class Result<S, P, C> {
      * @param prevState The state before the action was applied.
      * @param nextState The state after the action was applied.
      */
-    private constructor(success: boolean, content: C | null = null, errors: Error[] = [], action: Action<P, S, C>, prevState: S | null = null, nextState: S | null = null) {
+    private constructor(success: boolean, content: C | null = null, errors: Error[] = [], action: Action<P, S, C>, prevState: S | null = null, nextState: S | null = null, correlationId?: string) {
+        this._id = uuid();
+        this._correlationId = correlationId;
         this._success = success;
         this._content = content;
         this._errors = errors;
@@ -69,6 +82,24 @@ export class Result<S, P, C> {
         this._nextState = nextState;
         this._timestamp =  new Date();
         this._executionTime = action.timestamp ? this._timestamp.getTime() - action.timestamp.getTime() : null;
+    }
+
+    /**
+     * Provides access to the unique identifier of the action instance.
+     *
+     * @returns The unique identifier of the action.
+     */
+    public get id(): string {
+        return this._id;
+    }
+
+    /**
+     * Provides access to an optional identifier used to correlate multiple actions.
+     *
+     * @returns The correlation identifier of the action.
+     */
+    public get correlationId(): string | undefined {
+        return this._correlationId;
     }
 
     /**
@@ -160,7 +191,7 @@ export class Result<S, P, C> {
      * @returns {Result<S, C, P>} An instance of Result representing a successful action outcome.
      */
     public static success<S, P, C>(action: Action<P, S, C>, content: C, prevState: S | null, nextState: S): Result<S, P, C> {
-        return new Result<S, P, C>(true, content, [], action, prevState, nextState);
+        return new Result<S, P, C>(true, content, [], action, prevState, nextState, action.correlationId);
     }
 
 
@@ -176,7 +207,7 @@ export class Result<S, P, C> {
      * @returns {Result<S, P, C>} An instance of Result representing a failed action outcome.
      */
     public static failure<S, P, C>(action: Action<P, S, C>, errors: Error[], prevState: S | null, nextState: S | null = null): Result<S, P, C> {
-        return new Result<S, P, C>(false, null, errors, action, prevState, nextState);
+        return new Result<S, P, C>(false, null, errors, action, prevState, nextState, action.correlationId);
     }
 
     /**
