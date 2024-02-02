@@ -1,4 +1,5 @@
 import { randomUUID as uuid } from "crypto";
+import { diff, Diff } from "deep-diff";
 import { Action } from "./action";
 
 /**
@@ -332,5 +333,18 @@ export class Result<S, P, C> {
      */
     public orElse(f: () => Result<S, P, C>): Result<S, P, C> {
         return this._success ? this : f();
+    }
+
+    /**
+     * Generates a diff between the previous and next states of the action's result.
+     * 
+     * @returns An array of diff objects representing changes from the previous state to the next state, or undefined if no diff can be computed.
+     */
+    public generateDiff(): Diff<S, S>[] | undefined {
+        if (this._prevState !== null && this._nextState !== null) {
+            return diff(this._prevState, this._nextState);
+        }
+
+        return undefined;
     }
 }
