@@ -7,8 +7,18 @@
  */
 export interface ActionJSON<P> {
     /**
+     * The unique identifier for the action instance.
+     * This property is used to identify the action and is set during action creation.
+     */
+    id: string;
+
+    /**
+     * The optional identifier used to correlate the action with other related actions.
+     */
+    correlationId?: string;
+
+    /**
      * The name of the action, serving as a unique identifier.
-     * This property is used to identify the action and is typically set during action creation.
      */
     name: string;
 

@@ -1,3 +1,4 @@
+import { randomUUID as uuid } from "crypto";
 import { ActionJSON, Effect } from "../__interfaces";
 import { Ledger } from "./ledger";
 
@@ -9,6 +10,15 @@ import { Ledger } from "./ledger";
  * @template C The type of the content returned by the action's execution.
  */
 export class Action<P , S , C > {
+    /**
+     * A unique identifier for each action instance.
+     */
+    private readonly _id: string;
+
+    /**
+     * An optional identifier used to correlate this action with other related actions.
+     */
+    private readonly _correlationId?: string;
 
     /**
      * The name of the action, serving as an identifier.
@@ -29,7 +39,6 @@ export class Action<P , S , C > {
 
     /**
      * The timestamp when the action was created or initialized.
-     * Useful for tracking, logging, or timing purposes.
      */
     private readonly _timestamp: Date;
 
@@ -39,14 +48,34 @@ export class Action<P , S , C > {
      * @param name The name of the action, providing a unique identifier.
      * @param params Parameters required for executing the action.
      * @param exec The function that defines the execution logic of the action.
+     * @param correlationId An optional identifier used to correlate this action with related actions.
      */
-    private constructor(name: string, params: P[], exec: (currentState: S, params: P[]) => Promise<Effect<S, C>>) {
+    private constructor(name: string, params: P[], exec: (currentState: S, params: P[]) => Promise<Effect<S, C>>, correlationId?: string) {
+        this._id = uuid();
+        this._correlationId = correlationId
         this._name = name;
         this._params = params;
         this._exec = exec;
         this._timestamp = new Date();
     }
 
+    /**
+     * Provides access to the unique identifier of the action instance.
+     *
+     * @returns The unique identifier of the action.
+     */
+    public get id(): string {
+        return this._id;
+    }
+
+    /**
+     * Provides access to an optional identifier used to correlate multiple actions.
+     *
+     * @returns The correlation identifier of the action.
+     */
+    public get correlationId(): string | undefined {
+        return this._correlationId;
+    }
     /**
      * Provides access to the name of the action.
      *
@@ -80,31 +109,34 @@ export class Action<P , S , C > {
      * @param name The name of the action.
      * @param params Parameters required for the action.
      * @param exec The execution function that defines the action's logic.
+     * @param correlationId An optional identifier used to correlate this action with related actions.
      *
      * @returns A new instance of the Action class.
      */
-    public static create<P, S, C>(name: string, params: P[], exec: (currentState: S, params: P[]) => Promise<Effect<S, C>>): Action<P, S, C> {
+    public static create<P, S, C>(name: string, params: P[], exec: (currentState: S, params: P[]) => Promise<Effect<S, C>>, correlationId?: string): Action<P, S, C> {
         if (!Ledger.has(name)){
             Ledger.set(name, exec)
         }
 
-        return new Action<P, S, C>(name, params, exec);
+        return new Action<P, S, C>(name, params, exec, correlationId);
     }
 
     /**
      * Reconstructs an Action instance from a JSON object.
      * This static method is used to create a new Action instance based on previously serialized data.
+     * A new unique identifier is generated for the rehydrated action to ensure uniqueness.
      * The exec function cannot be serialized, and it needs to be reattached to the Action after using fromJSON.
      *
-     * @param json The JSON object to reconstruct the Action from. It should contain the name, params. A new timestamp will be automatically generated.
+     * @param json The JSON object to reconstruct the Action from. It should contain the name, params, and optionally the correlationId. A new id and timestamp will be automatically generated.
      *
-     * @returns A new instance of the Action class with the name, params, and timestamp set from the JSON object.
+     * @returns A new instance of the Action class with a new ID, the provided correlation ID (if any), name, params, and a new timestamp.
      */
-    public static fromJSON<P, S, C>(json: { name: string; params: P[]; }): Action<P, S, C> {
+    public static fromJSON<P, S, C>(json: { name: string; params: P[]; correlationId?: string }): Action<P, S, C> {
         return new Action<P, S, C>(json.name, json.params, async () => {
             throw new Error("Exec function not implemented. Attach exec function using attach().");
-        });
+        }, json.correlationId);
     }
+
 
     /**
      * Serializes the action into a JSON-friendly format.
@@ -114,7 +146,7 @@ export class Action<P , S , C > {
      * @returns An object containing the action's serializable data: name, parameters, and timestamp.
      */
     public toJSON(): ActionJSON<P> {
-        return { name: this._name, params: this._params, timestamp: this._timestamp };
+        return { id: this._id, correlationId: this._correlationId, name: this._name, params: this._params, timestamp: this._timestamp };
     }
 
     /**
