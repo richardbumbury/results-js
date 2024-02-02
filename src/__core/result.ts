@@ -62,6 +62,11 @@ export class Result<S, P, C> {
     private readonly _executionTime: number | null;
 
     /**
+     * The metadata related to the result object.
+     */
+    private _metadata: any
+
+    /**
      * Constructs a new Result object representing the outcome of an action.
      *
      * @param success Indicates the success or failure of the action.
@@ -177,6 +182,20 @@ export class Result<S, P, C> {
      */
     public get executionTime(): number | null {
         return this._executionTime;
+    }
+
+    /**
+     * Provides access to the metadata attached to the result object.
+     */
+    public get metadata(): any {
+        return this._metadata;
+    }
+
+    /**
+     * Sets metadata to for result object.
+     */
+    public set metadata(data: any) {
+        this._metadata = data;
     }
 
     /**
