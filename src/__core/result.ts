@@ -211,6 +211,24 @@ export class Result<S, P, C> {
     }
 
     /**
+     * Checks if the result represents a successful outcome.
+     * 
+     * @returns True if the result is a success, false otherwise.
+     */
+    public isSuccess(): boolean {
+        return this._success;
+    }
+
+    /**
+     * Checks if the result represents a failure.
+     * 
+     * @returns True if the result is a failure, false otherwise.
+     */
+    public isFailure(): boolean {
+        return !this._success;
+    }
+
+    /**
      * Transforms the content of this result using a provided function.
      * If the result is successful, the transformation function is applied to its content.
      * If the result is a failure, the original errors are preserved.
