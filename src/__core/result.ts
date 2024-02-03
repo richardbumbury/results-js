@@ -1,5 +1,6 @@
 import { randomUUID as uuid } from "crypto";
 import { diff, Diff } from "deep-diff";
+import { ResultJSON } from "../__interfaces";
 import { Action } from "./action";
 
 /**
@@ -59,6 +60,7 @@ export class Result<S, P, C> {
 
     /**
      * The execution time of the action, calculated as the difference between the action's timestamp and the result's timestamp.
+     * This may also represent the time it took to rehydrate the result if the result is deserialized.
      */
     private readonly _executionTime: number | null;
 
@@ -228,6 +230,70 @@ export class Result<S, P, C> {
      */
     public static failure<S, P, C>(action: Action<P, S, C>, errors: Error[], prevState: S | null, nextState: S | null = null): Result<S, P, C> {
         return new Result<S, P, C>(false, null, errors, action, prevState, nextState, action.correlationId);
+    }
+
+    /**
+     * Static method to deserialize a JSON object into a Result instance.
+     * It reconstructs the state of a Result based on its serialized form.
+     * This method assumes that the action associated with the result can be reattached or identified through other means, as function references cannot be serialized directly.
+     *
+     * @param json The JSON object representing a serialized Result.
+     * @param callback A callback function for deserializing the state. It receives the serialized state and returns the deserialized state.
+     *
+     * @returns A new Result instance with properties populated from the JSON object.
+     *
+     * @throws When the JSON structure is invalid or essential properties are missing.
+     */
+    public static fromJSON<S, P, C>(json: ResultJSON<S, P, C>, callback?: (state: any) => S): Result<S, P, C> {
+        if (typeof json.success !== 'boolean' || !json.action || !Array.isArray(json.errors)) {
+            throw new Error("Invalid JSON structure for Result.");
+        }
+
+        const action = Action.fromJSON<P, S, C>({
+            name: json.action.name,
+            params: json.action.params,
+            correlationId: json.action.correlationId
+        });
+
+        const errors = json.errors.map(e => new Error(e.message));
+
+        const nextState = callback ? callback(json.nextState) : json.nextState;
+        const prevState = callback ? callback(json.prevState) : json.prevState;
+
+        return new Result<S, P, C>(
+            json.success,
+            json.content,
+            errors,
+            action,
+            prevState,
+            nextState,
+            json.action.correlationId
+        );
+    }
+
+
+    /**
+     * Serializes the result into a JSON-friendly format.
+     * This method returns a plain object containing the serializable properties of the result.
+     * It is useful for scenarios where the result needs to be converted to a JSON string, such as when storing the result in a database or sending it over a network.
+     *
+     * @returns An object representing the result's serializable state.
+     */
+    public toJSON(): ResultJSON<S, P, C> {
+        return {
+            id: this._id,
+            success: this._success,
+            content: this._content,
+            errors: this._errors.map(error => ({ message: error.message, name: error.name })),
+            action: {
+                name: this._action.name,
+                params: this._action.params,
+            },
+            prevState: this._prevState,
+            nextState: this._nextState,
+            timestamp: this._timestamp.toISOString(),
+            executionTime: this._executionTime,
+        };
     }
 
     /**

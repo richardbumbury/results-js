@@ -1,3 +1,4 @@
+import sinon from "sinon";
 import { expect } from "chai";
 import { Effect } from "../../../src/__interfaces";
 import { Action, Result } from "../../../src/__core";
@@ -64,6 +65,176 @@ describe("Result", () => {
             expect(result.success).to.be.false;
             expect(result.content).to.be.null;
             expect(result.errors).to.deep.equal(errors);
+        });
+    });
+
+    describe("fromJSON", () => {
+        it("should correctly reconstruct a successful Result object from JSON", () => {
+            const json = {
+                id: "12345",
+                success: true,
+                content: { some: "data" },
+                errors: [],
+                action: {
+                    name: "TEST_ACTION",
+                    params: [1, 2, 3],
+                    correlationId: "12345"
+                },
+                prevState: { count: 0 },
+                nextState: { count: 3 },
+                correlationId: "12345",
+                timestamp: new Date().toISOString(),
+                executionTime: null,
+            };
+
+            const result = Result.fromJSON(json);
+
+            expect(result).to.be.an.instanceof(Result);
+            expect(result.success).to.equal(true);
+            expect(result.content).to.deep.equal({ some: "data" });
+            expect(result.errors).to.be.empty;
+            expect(result.action.name).to.equal("TEST_ACTION");
+            expect(result.prevState).to.deep.equal({ count: 0 });
+            expect(result.nextState).to.deep.equal({ count: 3 });
+        });
+
+        it("should correctly reconstruct a failed Result object from JSON", () => {
+            const json = {
+                id: "67890",
+                success: false,
+                content: null,
+                errors: [{ message: "Error occurred" }],
+                action: {
+                    name: "FAIL_ACTION",
+                    params: [4, 5, 6],
+                    correlationId: "67890"
+                },
+                prevState: { count: 3 },
+                nextState: null,
+                correlationId: "67890",
+                timestamp: new Date().toISOString(),
+                executionTime: null,
+            };
+
+            const result = Result.fromJSON(json);
+
+            expect(result).to.be.an.instanceof(Result);
+            expect(result.success).to.equal(false);
+            expect(result.content).to.be.null;
+            expect(result.errors).to.have.lengthOf(1);
+            expect(result.errors[0].message).to.equal("Error occurred");
+            expect(result.action.name).to.equal("FAIL_ACTION");
+            expect(result.prevState).to.deep.equal({ count: 3 });
+            expect(result.nextState).to.be.null;
+        });
+
+        it("should use the callback to transform state if provided", () => {
+            const json = {
+                id: "12345",
+                success: true,
+                content: { some: "data" },
+                errors: [],
+                action: {
+                    name: "TEST_ACTION_WITH_CALLBACK",
+                    params: [7, 8, 9],
+                    correlationId: "12345"
+                },
+                prevState: '{"count":0}',
+                nextState: '{"count":3}',
+                actionCorrelationId: "12345",
+                timestamp: new Date().toISOString(),
+                executionTime: null,
+            };
+
+            const callback = sinon.stub().callsFake(state => JSON.parse(state));
+            const result = Result.fromJSON(json, callback);
+
+            expect(callback.callCount).to.equal(2); // Ensure the callback was called for both prevState and nextState
+            expect(result.prevState).to.deep.equal({ count: 0 });
+            expect(result.nextState).to.deep.equal({ count: 3 });
+        });
+
+    });
+
+    describe("Result.toJSON", () => {
+        it("should serialize a successful result correctly", async () => {
+            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== "object" || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
+
+                        return;
+                    }
+
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+
+                        return;
+                    }
+
+                    const content = params.length;
+                    const transform = (state: any) => ({ ...state, count: content });
+
+                    resolve({ content, transform });
+                })
+            });
+
+            const sucess = { data: "test" };
+            const prevState = { count: 1 };
+            const nextState = { count: 2 };
+            const result = Result.success(action, sucess, prevState, nextState);
+
+            const serialized = result.toJSON();
+
+            expect(serialized).to.have.property("id").that.is.a("string");
+            expect(serialized.success).to.equal(true);
+            expect(serialized.content).to.deep.equal(sucess);
+            expect(serialized.errors).to.be.an("array").that.is.empty;
+            expect(serialized.action).to.deep.include({ name: "TEST_ACTION" });
+            expect(serialized.prevState).to.deep.equal(prevState);
+            expect(serialized.nextState).to.deep.equal(nextState);
+            expect(serialized).to.have.property("timestamp").that.is.a("string");
+            expect(serialized).to.have.property("executionTime").that.is.a("number");
+        });
+
+        it("should serialize a failure result correctly", async () => {
+            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== "object" || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
+
+                        return;
+                    }
+
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+
+                        return;
+                    }
+
+                    const content = params.length;
+                    const transform = (state: any) => ({ ...state, count: content });
+
+                    resolve({ content, transform });
+                })
+            });
+
+            const error = new Error("Test error");
+            const prevState = { count: 1 };
+            const result = Result.failure(action, [error], prevState, null);
+
+            const serialized = result.toJSON();
+
+            expect(serialized).to.have.property("id").that.is.a("string");
+            expect(serialized.success).to.equal(false);
+            expect(serialized.content).to.equal(null);
+            expect(serialized.errors).to.have.lengthOf(1);
+            expect(serialized.errors[0]).to.deep.include({ message: "Test error" });
+            expect(serialized.action).to.deep.include({ name: "TEST_ACTION" });
+            expect(serialized.prevState).to.deep.equal(prevState);
+            expect(serialized.nextState).to.equal(null);
+            expect(serialized).to.have.property("timestamp").that.is.a("string");
+            expect(serialized).to.have.property("executionTime").that.is.a("number");
         });
     });
 
