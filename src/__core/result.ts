@@ -297,8 +297,23 @@ export class Result<S, P, C> {
     }
 
     /**
+     * Converts the result into a string representation for debugging or logging .
+     * This representation includes key details such as the result's success status, associated action's name, content (if present), and any errors.
+     *
+     * @returns A string representation of the result.
+     */
+    public toString(): string {
+        const primary = `Result ID: ${this._id}\nSuccess: ${this._success}\nAction: ${this._action.name}\nTimestamp: ${this._timestamp.toISOString()}\nExecution Time: ${this._executionTime ? `${this._executionTime}ms` : 'N/A'}`;
+        const content = this._content !== null ? `\nContent: ${JSON.stringify(this._content, null, 2)}` : '';
+        const errors = this._errors.length > 0 ? `\nErrors: ${this._errors.map(e => e.message).join(', ')}` : '';
+        const states = `\nPrevious State: ${JSON.stringify(this._prevState, null, 2)}\nNext State: ${JSON.stringify(this._nextState, null, 2)}`;
+
+        return [primary, content, errors, states].join('');
+    }
+
+    /**
      * Checks if the result represents a successful outcome.
-     * 
+     *
      * @returns True if the result is a success, false otherwise.
      */
     public isSuccess(): boolean {
@@ -307,7 +322,7 @@ export class Result<S, P, C> {
 
     /**
      * Checks if the result represents a failure.
-     * 
+     *
      * @returns True if the result is a failure, false otherwise.
      */
     public isFailure(): boolean {
@@ -403,7 +418,7 @@ export class Result<S, P, C> {
 
     /**
      * Generates a diff between the previous and next states of the action's result.
-     * 
+     *
      * @returns An array of diff objects representing changes from the previous state to the next state, or undefined if no diff can be computed.
      */
     public generateDiff(): Diff<S, S>[] | undefined {
