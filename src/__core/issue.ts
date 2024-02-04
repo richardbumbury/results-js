@@ -1,3 +1,4 @@
+import { randomUUID as uuid } from "crypto";
 import { Action } from "./action";
 import { Result } from "./result";
 
@@ -10,6 +11,16 @@ import { Result } from "./result";
  * @template C The type of the content returned by the action's execution.
  */
 export class Issue<S, P, C> extends Error {
+    /**
+     * A unique identifier for each issue instance.
+     */
+    private readonly _id: string;
+
+    /**
+     * An optional identifier used to correlate this issue with other related issues and actions.
+     */
+    private readonly _correlationId?: string;
+
     /**
      * The failed result associated with the issue.
      */
@@ -29,9 +40,11 @@ export class Issue<S, P, C> extends Error {
      *
      * @throws An Error is an attempt is made to create an issue from a successful result.
      */
-    private constructor(message: string, result: Result<S, P, C>, action: Action<P, S, C>) {
+    private constructor(message: string, result: Result<S, P, C>, action: Action<P, S, C>, correlationId?: string) {
         super(message);
         if (!result.success) {
+            this._id = uuid();
+            this._correlationId = correlationId;
             this.name = this.constructor.name;
             this.result = result;
             this.action = action;
@@ -45,6 +58,24 @@ export class Issue<S, P, C> extends Error {
     }
 
     /**
+     * Provides access to the unique identifier of the issue instance.
+     *
+     * @returns The unique identifier of the issue.
+     */
+    public get id(): string {
+        return this._id;
+    }
+
+    /**
+     * Provides access to an optional identifier used to correlate multiple issues and actions.
+     *
+     * @returns The correlation identifier of the issue.
+     */
+    public get correlationId(): string | undefined {
+        return this._correlationId;
+    }
+
+    /**
      * Static method to create an Issue instance from an action and an error.
      * This method can be used to quickly encapsulate an error into an Issue object along with the action that led to the error.
      *
@@ -54,6 +85,6 @@ export class Issue<S, P, C> extends Error {
      * @returns {Issue<T>} A new Issue instance encapsulating the error and the action.
      */
     public static fromAction<S, P, C>(action: Action<P, S, C>, error: Error): Issue<S, P, C> {
-        return new Issue<S, P, C>(error.message, Result.failure<S, P, C>(action, [error], null, null), action);
+        return new Issue<S, P, C>(error.message, Result.failure<S, P, C>(action, [error], null, null), action, action.correlationId);
     }
 }
