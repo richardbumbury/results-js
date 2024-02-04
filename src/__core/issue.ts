@@ -32,6 +32,16 @@ export class Issue<S, P, C> extends Error {
     public readonly action: Action<P, S, C>;
 
     /**
+     * Map that holds unique error codes with corresponding error messages.
+     */
+    private static readonly _codes = new Map<string, string>();
+
+    /**
+     * Map that holds additional error messages that might be relevant for specific issues.
+     */
+    private static readonly _messages = new Map<string, string>();
+
+    /**
      * Constructs a new Issue object representing the failed outcome of an action.
      *
      * @param message The error message.
@@ -74,6 +84,57 @@ export class Issue<S, P, C> extends Error {
     public get correlationId(): string | undefined {
         return this._correlationId;
     }
+
+    public static get code() {
+        return {
+            /**
+             * Sets an error code and its associated message.
+             *
+             * @param code The unique error code.
+             * @param message The message associated with the error code.
+             */
+            set: ({ code, message }: { code: string, message: string }) => {
+                Issue._codes.set(code, message);
+            },
+
+            /**
+             * Retrieves the message associated with a given error code.
+             *
+             * @param code The error code.
+             * 
+             * @returns The message associated with the error code, or undefined if not found.
+             */
+            get: (code: string): string | undefined => {
+                return Issue._codes.get(code);
+            }
+        };
+    }
+
+    public static get message() {
+        return {
+            /**
+             * Sets an additional message for a specific issue.
+             *
+             * @param issueId The unique identifier of the issue.
+             * @param message The additional message to associate with the issue.
+             */
+            set: ({ issueId, message }: { issueId: string, message: string }) => {
+                Issue._messages.set(issueId, message);
+            },
+
+            /**
+             * Retrieves the additional message associated with a specific issue.
+             *
+             * @param issueId The unique identifier of the issue.
+             * 
+             * @returns The additional message associated with the issue, or undefined if not found.
+             */
+            get: (issueId: string): string | undefined => {
+                return Issue._messages.get(issueId);
+            }
+        };
+    }
+
 
     /**
      * Static method to create an Issue instance from an action and an error.
