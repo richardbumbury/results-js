@@ -251,6 +251,7 @@ export class Result<S, P, C> {
         }
 
         const action = Action.fromJSON<P, S, C>({
+            id: json.action.id,
             name: json.action.name,
             params: json.action.params,
             correlationId: json.action.correlationId
@@ -283,12 +284,15 @@ export class Result<S, P, C> {
     public toJSON(): ResultJSON<S, P, C> {
         return {
             id: this._id,
+            correlationId: this.correlationId,
             success: this._success,
             content: this._content,
             errors: this._errors.map(error => ({ message: error.message, name: error.name })),
             action: {
-                name: this._action.name,
-                params: this._action.params,
+                id: this.action.id,
+                correlationId: this.action.correlationId,
+                name: this.action.name,
+                params: this.action.params,
             },
             prevState: this._prevState,
             nextState: this._nextState,

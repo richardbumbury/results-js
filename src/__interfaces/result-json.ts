@@ -13,6 +13,11 @@ export interface ResultJSON<S, P, C> {
     id: string;
 
     /**
+     * The optional identifier used to correlate the result with other related results and actions.
+     */
+    correlationId?: string;
+
+    /**
      * Indicates whether the action associated with this result was successful.
      */
     success: boolean;
@@ -29,9 +34,10 @@ export interface ResultJSON<S, P, C> {
     errors: { message: string; name?: string }[];
 
     /**
-     * A simplified representation of the action associated with this result, including its name, parameters, and an optional correlation identifier.
+     * A simplified representation of the action associated with this issue, including its name, parameters, and an optional correlation identifier.
      */
     action: {
+        id: string;
         name: string;
         params: P[];
         correlationId?: string;

@@ -72,17 +72,18 @@ describe("Result", () => {
         it("should correctly reconstruct a successful Result object from JSON", () => {
             const json = {
                 id: "12345",
+                correlationId: "12345",
                 success: true,
                 content: { some: "data" },
                 errors: [],
                 action: {
+                    id: "12345",
+                    correlationId: "12345",
                     name: "TEST_ACTION",
                     params: [1, 2, 3],
-                    correlationId: "12345"
                 },
                 prevState: { count: 0 },
                 nextState: { count: 3 },
-                correlationId: "12345",
                 timestamp: new Date().toISOString(),
                 executionTime: null,
             };
@@ -101,17 +102,18 @@ describe("Result", () => {
         it("should correctly reconstruct a failed Result object from JSON", () => {
             const json = {
                 id: "67890",
+                correlationId: "67890",
                 success: false,
                 content: null,
                 errors: [{ message: "Error occurred" }],
                 action: {
-                    name: "FAIL_ACTION",
+                    id: "67890",
+                    correlationId: "67890",
+                        name: "FAIL_ACTION",
                     params: [4, 5, 6],
-                    correlationId: "67890"
                 },
                 prevState: { count: 3 },
                 nextState: null,
-                correlationId: "67890",
                 timestamp: new Date().toISOString(),
                 executionTime: null,
             };
@@ -131,17 +133,18 @@ describe("Result", () => {
         it("should use the callback to transform state if provided", () => {
             const json = {
                 id: "12345",
+                correlationId: "12345",
                 success: true,
                 content: { some: "data" },
                 errors: [],
                 action: {
+                    id: "12345",
+                    correlationId: "12345",
                     name: "TEST_ACTION_WITH_CALLBACK",
                     params: [7, 8, 9],
-                    correlationId: "12345"
                 },
                 prevState: '{"count":0}',
                 nextState: '{"count":3}',
-                actionCorrelationId: "12345",
                 timestamp: new Date().toISOString(),
                 executionTime: null,
             };
