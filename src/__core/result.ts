@@ -19,7 +19,7 @@ export class Result<S, P, C> {
     private readonly _id: string;
 
     /**
-     * An optional identifier used to correlate this action with other related actions.
+     * An optional identifier used to correlate this result with other related results and actions.
      */
     private readonly _correlationId?: string;
 
@@ -78,6 +78,7 @@ export class Result<S, P, C> {
      * @param action The action that led to this result.
      * @param prevState The state before the action was applied.
      * @param nextState The state after the action was applied.
+     * @param correlationId An optional identifier used to correlate this result with other related results and actions.
      */
     private constructor(success: boolean, content: C | null = null, errors: Error[] = [], action: Action<P, S, C>, prevState: S | null = null, nextState: S | null = null, correlationId?: string) {
         this._id = uuid();
@@ -93,18 +94,18 @@ export class Result<S, P, C> {
     }
 
     /**
-     * Provides access to the unique identifier of the action instance.
+     * Provides access to the unique identifier of the result instance.
      *
-     * @returns The unique identifier of the action.
+     * @returns The unique identifier of the result.
      */
     public get id(): string {
         return this._id;
     }
 
     /**
-     * Provides access to an optional identifier used to correlate multiple actions.
+     * Provides access to an optional identifier used to correlate multiple results and actions.
      *
-     * @returns The correlation identifier of the action.
+     * @returns The correlation identifier of the result.
      */
     public get correlationId(): string | undefined {
         return this._correlationId;
