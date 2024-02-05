@@ -10,7 +10,7 @@ describe("Action", () => {
             const params = [1, 2, 3];
             const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
-                    if (typeof currentState !== 'object' || currentState === null) {
+                    if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
 
                         return;
@@ -45,7 +45,7 @@ describe("Action", () => {
 
         beforeEach(() => {
             Ledger["registry"].clear();
-            warn = sinon.stub(console, 'warn');
+            warn = sinon.stub(console, "warn");
         });
 
         afterEach(() => {
@@ -154,12 +154,22 @@ describe("Action", () => {
     });
 
     describe("toJSON", () => {
+        let set: sinon.SinonSpy;
+
+        beforeEach(() => {
+            set = sinon.spy(Ledger, "set");
+        });
+
+        afterEach(() => {
+            set.restore();
+        });
+
         it("should correctly serialize an action's properties to a JSON object", () => {
             const name = "TEST_ACTION";
             const params = [1, 2, 3];
             const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
-                    if (typeof currentState !== 'object' || currentState === null) {
+                    if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
 
                         return;
@@ -183,11 +193,12 @@ describe("Action", () => {
             const json = action.toJSON();
 
             expect(json).to.be.an("object");
+            expect(json).to.include.keys("id", "correlationId", "name", "params", "timestamp");
             expect(json.id).to.equal(action.id);
             expect(json.correlationId).to.equal(action.correlationId);
             expect(json.name).to.equal(action.name);
             expect(json.params).to.deep.equal(action.params);
-            expect(json.timestamp).to.be.instanceOf(Date);
+            expect(json).to.have.property("timestamp").that.is.a("string");
         });
 
         it("should not include the exec function in the serialized JSON", () => {
@@ -195,7 +206,7 @@ describe("Action", () => {
             const params = [1, 2, 3];
             const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
-                    if (typeof currentState !== 'object' || currentState === null) {
+                    if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
 
                         return;
@@ -217,7 +228,44 @@ describe("Action", () => {
             const action = Action.create(name, params, exec);
             const json = action.toJSON();
 
-            expect(json).to.not.have.property('exec');
+            expect(json).to.be.an("object");
+            expect(json).to.include.keys("id", "correlationId", "name", "params", "timestamp");
+            expect(json.id).to.equal(action.id);
+            expect(json.correlationId).to.equal(action.correlationId);
+            expect(json.name).to.equal(action.name);
+            expect(json.params).to.deep.equal(action.params);
+            expect(json).to.have.property("timestamp").that.is.a("string");
+            expect(json).to.not.have.property("exec");
+        });
+
+        it("should register exec function in Ledger during action creation", async () => {
+            const name = "TEST_ACTION";
+            const params = [1, 2, 3];
+            const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== "object" || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
+
+                        return;
+                    }
+
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+
+                        return;
+                    }
+
+                    const content = params.length;
+                    const transform = (state: any) => ({ ...state, count: content });
+
+                    resolve({ content, transform });
+                })
+            };
+
+            const action = Action.create(name, params, exec);
+
+            expect(set.calledOnce).to.be.true;
+            expect(set.calledWith(action.id, exec)).to.be.true;
         });
 
         it("should allow the serialized JSON to be stringified", () => {
@@ -225,7 +273,7 @@ describe("Action", () => {
             const params = [1, 2, 3];
             const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
-                    if (typeof currentState !== 'object' || currentState === null) {
+                    if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
 
                         return;
@@ -251,13 +299,13 @@ describe("Action", () => {
         });
     });
 
-    describe('toString', function () {
-        it('should return the correct string representation for an action', function () {
+    describe("toString", function () {
+        it("should return the correct string representation for an action", function () {
             const name = "TEST_ACTION";
             const params = [1, 2, 3];
             const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
-                    if (typeof currentState !== 'object' || currentState === null) {
+                    if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
 
                         return;
@@ -288,7 +336,7 @@ describe("Action", () => {
             const params = [1, 2, 3];
             const exec_1 = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
-                    if (typeof currentState !== 'object' || currentState === null) {
+                    if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
 
                         return;
@@ -309,7 +357,7 @@ describe("Action", () => {
 
             const exec_2 = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
-                    if (typeof currentState !== 'object' || currentState === null) {
+                    if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
 
                         return;
@@ -345,7 +393,7 @@ describe("Action", () => {
             const params = [1, 2, 3];
             const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
-                    if (typeof currentState !== 'object' || currentState === null) {
+                    if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
 
                         return;
