@@ -301,7 +301,7 @@ export class Result<S, P, C> {
     }
 
     /**
-     * Converts the result into a string representation for debugging or logging .
+     * Converts the result into a string representation for debugging or logging.
      * This representation includes key details such as the result's success status, associated action's name, content (if present), and any errors.
      *
      * @returns A string representation of the result.
