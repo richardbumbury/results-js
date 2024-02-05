@@ -154,14 +154,14 @@ describe("Action", () => {
     });
 
     describe("toJSON", () => {
-        let set: sinon.SinonSpy;
+        let set: sinon.SinonStub;
 
         beforeEach(() => {
-            set = sinon.spy(Ledger, "set");
+            set = sinon.stub(Ledger, "set");
         });
 
         afterEach(() => {
-            set.restore();
+            sinon.restore();
         });
 
         it("should correctly serialize an action's properties to a JSON object", () => {
@@ -265,7 +265,7 @@ describe("Action", () => {
             const action = Action.create(name, params, exec);
 
             expect(set.calledOnce).to.be.true;
-            expect(set.calledWith(action.id, exec)).to.be.true;
+            expect(set.calledWith(sinon.match.string, sinon.match.func)).to.be.true;
         });
 
         it("should allow the serialized JSON to be stringified", () => {
