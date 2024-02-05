@@ -169,7 +169,8 @@ export class Action<P , S , C > {
             correlationId: this._correlationId,
             name: this._name,
             params: this._params,
-            timestamp: this._timestamp };
+            timestamp: this._timestamp.toISOString()
+        };
     }
 
     /**

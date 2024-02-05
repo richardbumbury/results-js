@@ -8,7 +8,6 @@
 export interface ActionJSON<P> {
     /**
      * The unique identifier for the action instance.
-     * This property is used to identify the action and is set during action creation.
      */
     id: string;
 
@@ -24,13 +23,11 @@ export interface ActionJSON<P> {
 
     /**
      * The parameters passed to the action, used in its execution.
-     * These parameters are part of the action's definition and are serialized for reference.
      */
     params: P[];
 
     /**
-     * The timestamp indicating when the action was created or initialized.
-     * This property helps in tracking the creation time of the action and is useful for logging or auditing purposes.
+     * The timestamp when the action was created, in ISO string format.
      */
-    timestamp: Date;
+    timestamp: string;
 }
