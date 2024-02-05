@@ -11,7 +11,7 @@ describe("Ledger", () => {
         it("should successfully register an exec function", () => {
             const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
-                    if (typeof currentState !== 'object' || currentState === null) {
+                    if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
 
                         return;
@@ -38,7 +38,7 @@ describe("Ledger", () => {
         it("should throw an error when registering a duplicate exec function", () => {
             const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
-                    if (typeof currentState !== 'object' || currentState === null) {
+                    if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
 
                         return;
@@ -67,7 +67,7 @@ describe("Ledger", () => {
         it("should retrieve an exec function for a registered action", () => {
             const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
-                    if (typeof currentState !== 'object' || currentState === null) {
+                    if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
 
                         return;
@@ -96,7 +96,7 @@ describe("Ledger", () => {
         it("should throw an error if the exec function for a given action is not registered", () => {
             const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
-                    if (typeof currentState !== 'object' || currentState === null) {
+                    if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
 
                         return;
@@ -121,17 +121,17 @@ describe("Ledger", () => {
         });
     });
 
-    describe('has', () => {
-        it('should return false when the action is not registered', () => {
-            const result = Ledger.has('UNREGISTERED_ACTION');
+    describe("has", () => {
+        it("should return false when the action is not registered", () => {
+            const result = Ledger.has("UNREGISTERED_ACTION");
 
             expect(result).to.be.false;
         });
 
-        it('should return true when the action is registered', () => {
+        it("should return true when the action is registered", () => {
             const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
-                    if (typeof currentState !== 'object' || currentState === null) {
+                    if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
 
                         return;
@@ -152,7 +152,7 @@ describe("Ledger", () => {
 
             Ledger.set("TEST_ACTION", exec);
 
-            const result = Ledger.has('TEST_ACTION');
+            const result = Ledger.has("TEST_ACTION");
 
             expect(result).to.be.true;
         });
@@ -166,7 +166,7 @@ describe("Ledger", () => {
             const params = [1, 2, 3];
             const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
-                    if (typeof currentState !== 'object' || currentState === null) {
+                    if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
 
                         return;
@@ -203,7 +203,7 @@ describe("Ledger", () => {
             const params = [1, 2, 3];
             const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
-                    if (typeof currentState !== 'object' || currentState === null) {
+                    if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
 
                         return;
