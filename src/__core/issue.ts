@@ -1,4 +1,5 @@
 import { randomUUID as uuid } from "crypto";
+import { IssueJSON } from "../__interfaces";
 import { Action } from "./action";
 import { Result } from "./result";
 
@@ -12,7 +13,7 @@ import { Result } from "./result";
  */
 export class Issue<S, P, C> extends Error {
     /**
-     * A unique identifier for each issue instance.
+     * A unique identifier for each issue.
      */
     private readonly _id: string;
 
@@ -24,14 +25,25 @@ export class Issue<S, P, C> extends Error {
     /**
      * The failed result associated with the issue.
      */
-    public readonly result: Result<S, P, C>;
+    private readonly _result: Result<S, P, C>;
 
     /**
-     * The action associated with this result.
+     * The action associated with this issue.
      */
-    public readonly action: Action<P, S, C>;
+    private readonly _action: Action<P, S, C>;
 
-    /**
+     /**
+     * The timestamp when the issue  was created.
+     */
+     private readonly _timestamp: Date;
+
+     /**
+      * The execution time of the action, calculated as the difference between the action's timestamp and the issue's timestamp.
+      * This may also represent the time it took to rehydrate the issue if the issue is deserialized.
+      */
+     private readonly _executionTime: number | null;
+
+     /**
      * Map that holds unique error codes with corresponding error messages.
      */
     private static readonly _codes = new Map<string, string>();
@@ -56,8 +68,10 @@ export class Issue<S, P, C> extends Error {
             this._id = uuid();
             this._correlationId = correlationId;
             this.name = this.constructor.name;
-            this.result = result;
-            this.action = action;
+            this._result = result;
+            this._action = action;
+            this._timestamp =  new Date();
+            this._executionTime = action.timestamp ? this._timestamp.getTime() - action.timestamp.getTime() : null;
 
             if (Error.captureStackTrace) {
                 Error.captureStackTrace(this, this.constructor);
@@ -85,6 +99,43 @@ export class Issue<S, P, C> extends Error {
         return this._correlationId;
     }
 
+    /**
+     * Provides access to the action associated with this issue.
+     * This allows tracing back to the action that led to the current issue.
+     *
+     * @returns The action that generated this issue.
+     */
+    public get action(): Action<P, S, C> {
+        return this._action;
+    }
+
+    /**
+     * Provides access to the result associated with this issue.
+     *
+     * @returns The result associate with this issue.
+     */
+    public get result(): Result<S, P, C> {
+        return this._result;
+    }
+
+    /**
+     * Provides access to the timestamp of when the issue was created.
+     *
+     * @returns The timestamp.
+     */
+    public get timestamp(): Date {
+        return this._timestamp;
+    }
+
+    /**
+     * Provides access to the execution time of the action associated with the issue.
+     *
+     * @returns The execution time in milliseconds.
+     */
+    public get executionTime(): number | null {
+        return this._executionTime;
+    }
+
     public static get code() {
         return {
             /**
@@ -101,7 +152,7 @@ export class Issue<S, P, C> extends Error {
              * Retrieves the message associated with a given error code.
              *
              * @param code The error code.
-             * 
+             *
              * @returns The message associated with the error code, or undefined if not found.
              */
             get: (code: string): string | undefined => {
@@ -126,7 +177,7 @@ export class Issue<S, P, C> extends Error {
              * Retrieves the additional message associated with a specific issue.
              *
              * @param issueId The unique identifier of the issue.
-             * 
+             *
              * @returns The additional message associated with the issue, or undefined if not found.
              */
             get: (issueId: string): string | undefined => {
@@ -147,5 +198,62 @@ export class Issue<S, P, C> extends Error {
      */
     public static fromAction<S, P, C>(action: Action<P, S, C>, error: Error): Issue<S, P, C> {
         return new Issue<S, P, C>(error.message, Result.failure<S, P, C>(action, [error], null, null), action, action.correlationId);
+    }
+
+    /**
+     * Static method to deserialize a JSON object into a Issue instance.
+     * It reconstructs the state of an Issue based on its serialized form.
+     * This method assumes that the action associated with the result can be reattached or identified through other means, as function references cannot be serialized directly.
+     *
+     * @param json The JSON object representing a serialized Issue.
+     *
+     * @returns A new Issue instance with properties populated from the JSON object.
+     *
+     * @throws When the JSON structure is invalid or essential properties are missing.
+     */
+    public static fromJSON<S, P, C>(json: IssueJSON<S, P, C>): Issue<S, P, C> {
+        if (typeof json !== 'object' || !json.action || !json.result || !json.result.errors ) {
+            throw new Error("Invalid JSON structure for Issue.");
+        }
+
+        const action = Action.fromJSON<P, S, C>({
+            id: json.action.id,
+            name: json.action.name,
+            params: json.action.params,
+            correlationId: json.action.correlationId
+        });
+
+        const result = Result.fromJSON<S, P, C>(json.result, undefined)
+
+        return new Issue<S, P, C>(
+            json.message,
+            result,
+            action,
+            json.correlationId
+        );
+    };
+
+    /**
+     * Serializes the issue into a JSON-friendly format.
+     * This method returns a plain object containing the serializable properties of the issue,
+     * making it suitable for logging, storing, or transmitting as a JSON string.
+     *
+     * @returns An object representing the issue's serializable state.
+     */
+    public toJSON(): IssueJSON<S, P, C> {
+        return {
+            id: this._id,
+            correlationId: this._correlationId,
+            name: this.name,
+            message: this.message,
+            action: {
+                id: this.action.id,
+                correlationId: this.action.correlationId,
+                name: this.action.name,
+                params: this.action.params,
+            },
+            result: this.result ? this.result.toJSON() : null,
+            timestamp: this._timestamp.toISOString(),
+        };
     }
 }
