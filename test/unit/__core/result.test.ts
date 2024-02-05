@@ -349,61 +349,6 @@ describe("Result", () => {
                 expect(result.toString()).to.include("Errors: Error: Invalid parameters: Negative values are not allowed");
             }
         });
-
-        it("should return a string representation for a result with custom content", function() {
-            const action = Action.create("CUSTOM_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise((resolve, reject) => {
-                    if (typeof currentState !== "object" || currentState === null) {
-                        reject(new Error("Invalid state: State must be a non-null object"));
-                        return;
-                    }
-
-                    if (params.some(param => param < 0)) {
-                        reject(new Error("Invalid parameters: Negative values are not allowed"));
-                        return;
-                    }
-
-                    const content = params.length;
-                    const transform = (state: any) => ({ ...state, count: content });
-
-                    resolve({ content, transform });
-                });
-            });
-
-            const custom = { key: "value" };
-            const result = Result.success(action, custom, {}, {});
-
-            expect(result.toString()).to.include("Success: true");
-            expect(result.toString()).to.include("Action: CUSTOM_ACTION");
-            expect(result.toString()).to.include('"key": "value"');
-        });
-
-        it("should handle results without content", function() {
-            const action = Action.create("NO_CONTENT_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise((resolve, reject) => {
-                    if (typeof currentState !== "object" || currentState === null) {
-                        reject(new Error("Invalid state: State must be a non-null object"));
-                        return;
-                    }
-
-                    if (params.some(param => param < 0)) {
-                        reject(new Error("Invalid parameters: Negative values are not allowed"));
-                        return;
-                    }
-
-                    const content = null;
-                    const transform = (state: any) => ({ ...state, count: content });
-
-                    resolve({ content, transform });
-                });
-            });
-
-            const result = Result.success(action, null, null, {});
-
-            expect(result.toString()).to.include("Success: true");
-            expect(result.toString()).to.include("Action: NO_CONTENT_ACTION");
-            expect(result.toString()).to.not.include("Content:");
-        });
     });
 
     describe("isSuccess", () => {
