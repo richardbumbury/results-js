@@ -257,4 +257,27 @@ export class Issue<S, P, C> extends Error {
             executionTime: this._executionTime,
         };
     }
+
+    /**
+     * Converts the issue into a string representation for debugging or logging.
+     * This representation includes key details such as the issue's error message, associated action's name and ID, and execution time (if present).
+     *
+     * @returns A string representation of the issue.
+     */
+    public toString(): string {
+        let string = `Issue ID: ${this._id}\n`;
+
+        if (this._correlationId) {
+            string += `Correlation ID: ${this._correlationId}\n`;
+        }
+
+        string += `Action Name: ${this._action.name}, Action ID: ${this._action.id}\n`;
+        string += `Error Message: ${this.message}\n`;
+        string += `Timestamp: ${this._timestamp.toISOString()}\n`;
+
+        if (this._executionTime !== null) {
+            string += `Execution Time: ${this._executionTime}ms\n`;
+        }
+        return string;
+    }
 }
