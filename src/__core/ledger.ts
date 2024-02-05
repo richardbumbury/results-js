@@ -2,76 +2,75 @@ import { Effect } from "../__interfaces";
 import { Action } from "./action";
 
 /**
- * The Ledger class serves as a registry for exec functions associated with different action types.
+ * The Ledger class serves as a registry for exec functions associated with different action.
  * It enables the management and rehydration of Action instances, particularly useful when dealing with serialization/deserialization processes where function references cannot be maintained.
  */
 export class Ledger {
     /**
-     * A Map serving as a registry for exec functions. It maps action types (string) to their corresponding exec functions.
-     * This registry is essential for the rehydration process of Action instances, allowing the reattachment of exec functions, which cannot be serialized/deserialized.
-     * The use of a Map ensures efficient retrieval and management of these functions.
+     * A Map serving as a registry for exec functions. It maps action IDs (string) to their corresponding exec functions.
      */
     private static registry = new Map<string, (currentState: any, params: any) => Promise<Effect<any, any>>>();
 
     /**
-     * Registers an exec function for a specific action type. If the type already exists, an error is thrown.
+     * Registers an exec function for a specific action. If the action already exists, an error is thrown.
      *
-     * @param type A unique identifier for the action type.
-     * @param exec The exec function to be associated with the action type.
+     * @param id The unique identifier of the action.
+     * @param exec The exec function to be associated with the action.
      *
      * @returns Boolean indicating successful registration.
      *
-     * @throws Error if the exec function for the given type is already registered.
+     * @throws Error if the exec function for the given action is already registered.
      */
-    public static set(type: string, exec: (currentState: any, params: any) => Promise<Effect<any, any>>): boolean {
-        if (Ledger.registry.has(type)) {
-            throw new Error(`Exec function for action type '${type}' is already registered.`);
+    public static set(id: string, exec: (currentState: any, params: any) => Promise<Effect<any, any>>): boolean {
+        if (Ledger.registry.has(id)) {
+            throw new Error(`Exec function for action '${id}' is already registered.`);
         }
 
-        Ledger.registry.set(type, exec);
+        Ledger.registry.set(id, exec);
 
         return true;
     }
 
     /**
-     * Retrieves the exec function for a given action type.
+     * Retrieves the exec function for a given action.
      *
-     * @param type The type of action.
+     * @param id The unique identifier of the action.
      *
-     * @returns The exec function associated with the action type.
+     * @returns The exec function associated with the action.
      *
-     * @throws Error if the exec function for the given type is not registered.
+     * @throws Error if the exec function for the given action is not registered.
      */
-    public static get(type: string): (currentState: any, params: any) => Promise<Effect<any, any>> {
-        const exec = Ledger.registry.get(type);
+    public static get(id: string): (currentState: any, params: any) => Promise<Effect<any, any>> {
+        const exec = Ledger.registry.get(id);
+
         if (!exec) {
-            throw new Error(`Exec function for action type '${type}' is not registered.`);
+            throw new Error(`Exec function for action '${id}' is not registered.`);
         }
 
         return exec;
     }
 
     /**
-     * Checks whether an exec function for a specific action type is registered in the Ledger.
+     * Checks whether an exec function for a specified action is registered in the Ledger.
      *
-     * @param type The action type to check.
+     * @param id The unique identifier of the action.
      *
-     * @returns A Boolean indicating whether the exec function for the given type is registered.
+     * @returns A Boolean indicating whether the exec function for the given action is registered.
      */
-    public static has(type: string): boolean {
-        return this.registry.has(type);
+    public static has(id: string): boolean {
+        return this.registry.has(id);
     }
 
     /**
-     * Rehydrates an Action instance with its associated exec function based on the action type.
+     * Rehydrates an Action instance with its associated exec function.
      *
      * @param action The action instance to be rehydrated.
-     * @param type The type of action.
+     * @param id The unique identifier of the action.
      *
      * @returns The rehydrated action instance.
      */
-    public static rehydrate<P, S, C>(action: Action<P, S, C>, type: string): Action<P, S, C> {
-        const exec = Ledger.get(type);
+    public static rehydrate<P, S, C>(action: Action<P, S, C>, id: string): Action<P, S, C> {
+        const exec = Ledger.get(id);
 
         return action.attach(exec);
     }
