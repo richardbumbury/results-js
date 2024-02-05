@@ -54,7 +54,7 @@ export class Result<S, P, C> {
     private readonly _nextState: S | null;
 
     /**
-     * The timestamp when the Result instance was created.
+     * The timestamp when the result instance was created.
      */
     private readonly _timestamp: Date;
 
@@ -152,7 +152,6 @@ export class Result<S, P, C> {
 
     /**
      * Provides access tp the state of the system before the action was executed.
-     * Useful for understanding the state transition caused by the action.
      *
      * @returns The state before the action, or null if not applicable.
      */
@@ -171,7 +170,7 @@ export class Result<S, P, C> {
     }
 
     /**
-     * Provides access to the timestamp of when the Result was created.
+     * Provides access to the timestamp of when the result was created.
      *
      * @returns The timestamp.
      */
@@ -180,7 +179,7 @@ export class Result<S, P, C> {
     }
 
     /**
-     * Provides access to the execution time of the action.
+     * Provides access to the execution time of the action associated with the result.
      *
      * @returns The execution time in milliseconds.
      */
