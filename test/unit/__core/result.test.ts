@@ -346,7 +346,7 @@ describe("Result", () => {
             if (result) {
                 expect(result.toString()).to.include("Success: false");
                 expect(result.toString()).to.include("Action: FAIL_ACTION");
-                expect(result.toString()).to.include("Errors: Invalid parameters: Negative values are not allowed");
+                expect(result.toString()).to.include("Errors: Error: Invalid parameters: Negative values are not allowed");
             }
         });
 

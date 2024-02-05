@@ -307,12 +307,26 @@ export class Result<S, P, C> {
      * @returns A string representation of the result.
      */
     public toString(): string {
-        const primary = `Result ID: ${this._id}\nSuccess: ${this._success}\nAction: ${this._action.name}\nTimestamp: ${this._timestamp.toISOString()}\nExecution Time: ${this._executionTime ? `${this._executionTime}ms` : 'N/A'}`;
-        const content = this._content !== null ? `\nContent: ${JSON.stringify(this._content, null, 2)}` : '';
-        const errors = this._errors.length > 0 ? `\nErrors: ${this._errors.map(e => e.message).join(', ')}` : '';
-        const states = `\nPrevious State: ${JSON.stringify(this._prevState, null, 2)}\nNext State: ${JSON.stringify(this._nextState, null, 2)}`;
+        let string = `Result ID: ${this._id}\n`;
+        string += `Success: ${this._success}\n`;
+        string += `Action: ${this._action.name}\n`;
+        string += `Timestamp: ${this._timestamp.toISOString()}\n`;
+        string += `Execution Time: ${this._executionTime ? `${this._executionTime}ms` : 'N/A'}\n`;
 
-        return [primary, content, errors, states].join('');
+        if (this._content !== null) {
+            string += `Content: ${JSON.stringify(this._content, null, 2)}\n`;
+        }
+        if (this._errors.length > 0) {
+            string += `Errors: ${this._errors.map(e => `${e.name}: ${e.message}`).join('\n')}\n`;
+        }
+        if (this._prevState !== null) {
+            string += `Previous State: ${JSON.stringify(this._prevState, null, 2)}\n`;
+        }
+        if (this._nextState !== null) {
+            string += `Next State: ${JSON.stringify(this._nextState, null, 2)}\n`;
+        }
+
+        return string.trim();
     }
 
     /**
