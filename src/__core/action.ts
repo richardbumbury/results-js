@@ -132,13 +132,25 @@ export class Action<P , S , C > {
      *
      * @returns A new instance of the Action class with a new ID, the provided correlation ID (if any), name, params, and a new timestamp.
      */
-    public static fromJSON<P, S, C>(json: { name: string; params: P[]; correlationId?: string }): Action<P, S, C> {
-        return new Action<P, S, C>(
+    public static fromJSON<P, S, C>(json: { id: string; name: string; params: P[]; correlationId?: string }): Action<P, S, C> {
+        const action = new Action<P, S, C>(
             json.name,
             json.params,
             async () => { throw new Error("Exec function not implemented. Attach exec function using attach().") },
             json.correlationId
         );
+
+        if (Ledger.has(json.id)) {
+            try {
+                Ledger.rehydrate(action, json.id)
+            } catch (error) {
+                console.error(`Error reattaching exec function: ${error}`);
+            }
+        } else {
+            console.warn(`Exec function for action '${json.id}' not found in the Ledger. A default exec function has been attached.`);
+        }
+
+        return action
     }
 
 
@@ -150,6 +162,8 @@ export class Action<P , S , C > {
      * @returns An object containing the action's serializable data: name, parameters, and timestamp.
      */
     public toJSON(): ActionJSON<P> {
+        Ledger.set(this._id, this._exec);
+
         return {
             id: this._id,
             correlationId: this._correlationId,

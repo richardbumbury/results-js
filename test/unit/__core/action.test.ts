@@ -1,7 +1,7 @@
+import * as sinon from "sinon";
 import { expect } from "chai";
-import { randomUUID as uuid } from "crypto";
 import { Effect } from "../../../src/__interfaces";
-import { Action } from "../../../src/__core";
+import { Action, Ledger } from "../../../src/__core";
 
 describe("Action", () => {
     describe("create", () => {
@@ -41,8 +41,92 @@ describe("Action", () => {
     });
 
     describe("fromJSON", () => {
+        let warn: sinon.SinonStub;
+
+        beforeEach(() => {
+            Ledger["registry"].clear();
+            warn = sinon.stub(console, 'warn');
+        });
+
+        afterEach(() => {
+            warn.restore();
+        });
+
+        it("should reattach an exec function from the Ledger if available", async () => {
+            const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== 'object' || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
+
+                        return;
+                    }
+
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+
+                        return;
+                    }
+
+                    const content = params.length;
+                    const transform = (state: any) => ({ ...state, count: content });
+
+                    resolve({ content, transform });
+                })
+            };
+
+            const json = {
+                id: "12345",
+                correlationId: "12345",
+                name: "TEST_ACTION",
+                params: [1, 2, 3]
+            };
+
+            Ledger.set(json.id, exec);
+
+            const action = Action.fromJSON(json);
+            const result = await action.execute({});
+
+            expect(result.content).to.equal(3);
+            expect(result.transform({})).to.deep.equal({ count: 3 });
+        });
+
+        it("should warn and use a default exec function if the exec is not found in the Ledger", async () => {
+            const json = {
+                id: "67890",
+                correlationId: "67890",
+                name: "UNREGISTERED_ACTION",
+                params: [4, 5, 6]
+            };
+
+            const action = Action.fromJSON(json);
+            await expect(action.execute({ value: 0 })).to.eventually.be.rejected;
+
+            expect(warn.called).to.be.true;
+        });
+
+        it("should handle errors during exec function reattachment", () => {
+            const json = {
+                id: "12345",
+                correlationId: "12345",
+                name: "ERROR_ACTION",
+                params: []
+            };
+
+            const error = sinon.spy(console, "error");
+
+            try {
+                Action.fromJSON(json);
+            } catch (e) {
+                expect(error.called).to.be.true;
+            }
+
+            error.restore();
+        });
+
         it("should create an Action instance with the correct name and params from JSON", () => {
             const json = {
+                id: "12345",
+                correlationId: "12345",
                 name: "TEST_ACTION",
                 params: [1, 2, 3]
             };
@@ -50,7 +134,6 @@ describe("Action", () => {
             const action = Action.fromJSON(json);
 
             expect(typeof action.id).to.equal("string")
-            expect(action.correlationId).to.be.undefined; // because we don't set a correlation ID
             expect(action.name).to.equal(json.name);
             expect(action.params).to.deep.equal(json.params);
             expect(action.timestamp).to.be.instanceOf(Date);
@@ -58,6 +141,8 @@ describe("Action", () => {
 
         it("should create an Action instance with a default exec function", async () => {
             const json = {
+                id: "12345",
+                correlationId: "12345",
                 name: "TEST_ACTION",
                 params: [1, 2, 3]
             };

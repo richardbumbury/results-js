@@ -1,4 +1,4 @@
-import sinon from "sinon";
+import * as sinon from "sinon";
 import { expect } from "chai";
 import { Effect } from "../../../src/__interfaces";
 import { Action, Result } from "../../../src/__core";
@@ -69,6 +69,16 @@ describe("Result", () => {
     });
 
     describe("fromJSON", () => {
+        let warn: sinon.SinonStub;
+
+        beforeEach(() => {
+            warn = sinon.stub(console, 'warn');
+        });
+
+        afterEach(() => {
+            warn.restore();
+        });
+
         it("should correctly reconstruct a successful Result object from JSON", () => {
             const json = {
                 id: "12345",
