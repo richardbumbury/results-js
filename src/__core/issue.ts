@@ -254,6 +254,7 @@ export class Issue<S, P, C> extends Error {
             },
             result: this.result ? this.result.toJSON() : null,
             timestamp: this._timestamp.toISOString(),
+            executionTime: this._executionTime,
         };
     }
 }

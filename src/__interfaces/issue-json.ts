@@ -48,4 +48,9 @@ export interface IssueJSON<S, P, C> {
      * The timestamp when the result was created, in ISO string format.
      */
     timestamp: string;
+
+    /**
+     * The execution time of the action in milliseconds, calculated from the action's start to the issue's creation.
+     */
+    executionTime: number | null;
 }
