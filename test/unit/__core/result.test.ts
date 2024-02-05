@@ -72,7 +72,7 @@ describe("Result", () => {
         let warn: sinon.SinonStub;
 
         beforeEach(() => {
-            warn = sinon.stub(console, 'warn');
+            warn = sinon.stub(console, "warn");
         });
 
         afterEach(() => {
@@ -169,7 +169,7 @@ describe("Result", () => {
 
     });
 
-    describe("Result.toJSON", () => {
+    describe("toJSON", () => {
         it("should serialize a successful result correctly", async () => {
             const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
@@ -192,22 +192,24 @@ describe("Result", () => {
                 })
             });
 
-            const sucess = { data: "test" };
+            const success = { data: "test" };
             const prevState = { count: 1 };
             const nextState = { count: 2 };
-            const result = Result.success(action, sucess, prevState, nextState);
+            const result = Result.success(action, success, prevState, nextState);
 
-            const serialized = result.toJSON();
+            const json = result.toJSON();
 
-            expect(serialized).to.have.property("id").that.is.a("string");
-            expect(serialized.success).to.equal(true);
-            expect(serialized.content).to.deep.equal(sucess);
-            expect(serialized.errors).to.be.an("array").that.is.empty;
-            expect(serialized.action).to.deep.include({ name: "TEST_ACTION" });
-            expect(serialized.prevState).to.deep.equal(prevState);
-            expect(serialized.nextState).to.deep.equal(nextState);
-            expect(serialized).to.have.property("timestamp").that.is.a("string");
-            expect(serialized).to.have.property("executionTime").that.is.a("number");
+            expect(json).to.be.an("object");
+            expect(json).to.include.keys("id", "correlationId", "success", "content", "errors", "action", "prevState", "nextState", "timestamp", "executionTime");
+            expect(json).to.have.property("id").that.is.a("string");
+            expect(json.success).to.equal(true);
+            expect(json.content).to.deep.equal(success);
+            expect(json.errors).to.be.an("array").that.is.empty;
+            expect(json.action).to.deep.include({ name: "TEST_ACTION" });
+            expect(json.prevState).to.deep.equal(prevState);
+            expect(json.nextState).to.deep.equal(nextState);
+            expect(json).to.have.property("timestamp").that.is.a("string");
+            expect(json).to.have.property("executionTime").that.is.a("number");
         });
 
         it("should serialize a failure result correctly", async () => {
@@ -236,22 +238,56 @@ describe("Result", () => {
             const prevState = { count: 1 };
             const result = Result.failure(action, [error], prevState, null);
 
-            const serialized = result.toJSON();
+            const json = result.toJSON();
 
-            expect(serialized).to.have.property("id").that.is.a("string");
-            expect(serialized.success).to.equal(false);
-            expect(serialized.content).to.equal(null);
-            expect(serialized.errors).to.have.lengthOf(1);
-            expect(serialized.errors[0]).to.deep.include({ message: "Test error" });
-            expect(serialized.action).to.deep.include({ name: "TEST_ACTION" });
-            expect(serialized.prevState).to.deep.equal(prevState);
-            expect(serialized.nextState).to.equal(null);
-            expect(serialized).to.have.property("timestamp").that.is.a("string");
-            expect(serialized).to.have.property("executionTime").that.is.a("number");
+            expect(json).to.be.an("object");
+            expect(json).to.include.keys("id", "correlationId", "success", "content", "errors", "action", "prevState", "nextState", "timestamp", "executionTime");
+            expect(json).to.have.property("id").that.is.a("string");
+            expect(json.success).to.equal(false);
+            expect(json.content).to.equal(null);
+            expect(json.errors).to.have.lengthOf(1);
+            expect(json.errors[0]).to.deep.include({ message: "Test error" });
+            expect(json.action).to.deep.include({ name: "TEST_ACTION" });
+            expect(json.prevState).to.deep.equal(prevState);
+            expect(json.nextState).to.equal(null);
+            expect(json).to.have.property("timestamp").that.is.a("string");
+            expect(json).to.have.property("executionTime").that.is.a("number");
+        });
+
+        it("should allow the serialized JSON to be stringified", () => {
+            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== "object" || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
+
+                        return;
+                    }
+
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+
+                        return;
+                    }
+
+                    const content = params.length;
+                    const transform = (state: any) => ({ ...state, count: content });
+
+                    resolve({ content, transform });
+                })
+            });
+
+            const success = { data: "test" };
+            const prevState = { count: 1 };
+            const nextState = { count: 2 };
+            const result = Result.success(action, success, prevState, nextState);
+
+            const json = result.toJSON();
+
+            expect(() => JSON.stringify(json)).to.not.throw();
         });
     });
 
-    describe("toString()", function() {
+    describe("toString", function() {
         it("should return a string representation for a successful result", function() {
             const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
@@ -370,7 +406,7 @@ describe("Result", () => {
         });
     });
 
-    describe("isSuccess()", () => {
+    describe("isSuccess", () => {
         it("should return true for a successful result", () => {
             const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
@@ -424,7 +460,7 @@ describe("Result", () => {
         });
     });
 
-    describe("isFailure()", () => {
+    describe("isFailure", () => {
         it("should return true for a failed result", () => {
             const action = Action.create("FAIL_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
