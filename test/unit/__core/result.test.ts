@@ -1,7 +1,7 @@
 import * as sinon from "sinon";
 import { expect } from "chai";
 import { Effect } from "../../../src/__interfaces";
-import { Action, Result } from "../../../src/__core";
+import { Action, Hooks, Result } from "../../../src/__core";
 
 describe("Result", () => {
     describe("success", () => {
@@ -76,10 +76,10 @@ describe("Result", () => {
         });
 
         afterEach(() => {
-            warn.restore();
+            sinon.restore();
         });
 
-        it("should correctly reconstruct a successful Result object from JSON", () => {
+        it("should correctly reconstruct a successful Result object from JSON", async () => {
             const json = {
                 id: "12345",
                 correlationId: "12345",
@@ -98,7 +98,7 @@ describe("Result", () => {
                 executionTime: null,
             };
 
-            const result = Result.fromJSON(json);
+            const result = await Result.fromJSON(json);
 
             expect(result).to.be.an.instanceof(Result);
             expect(result.success).to.equal(true);
@@ -109,7 +109,7 @@ describe("Result", () => {
             expect(result.nextState).to.deep.equal({ count: 3 });
         });
 
-        it("should correctly reconstruct a failed Result object from JSON", () => {
+        it("should correctly reconstruct a failed Result object from JSON", async () => {
             const json = {
                 id: "67890",
                 correlationId: "67890",
@@ -128,7 +128,7 @@ describe("Result", () => {
                 executionTime: null,
             };
 
-            const result = Result.fromJSON(json);
+            const result = await Result.fromJSON(json);
 
             expect(result).to.be.an.instanceof(Result);
             expect(result.success).to.equal(false);
@@ -140,33 +140,41 @@ describe("Result", () => {
             expect(result.nextState).to.be.null;
         });
 
-        it("should use the callback to transform state if provided", () => {
-            const json = {
-                id: "12345",
-                correlationId: "12345",
-                success: true,
-                content: { some: "data" },
-                errors: [],
-                action: {
+        it("should call hooks during state deserialization", async () => {
+            const beforeDeserializeStateStub = sinon.stub();
+            const afterDeserializeStateStub = sinon.stub();
+
+            try {
+                Hooks.register("beforeDeserializeState", beforeDeserializeStateStub);
+                Hooks.register("afterDeserializeState", afterDeserializeStateStub);
+
+                const json = {
                     id: "12345",
                     correlationId: "12345",
-                    name: "TEST_ACTION_WITH_CALLBACK",
-                    params: [7, 8, 9],
-                },
-                prevState: '{"count":0}',
-                nextState: '{"count":3}',
-                timestamp: new Date().toISOString(),
-                executionTime: null,
-            };
+                    success: true,
+                    content: { some: "data" },
+                    errors: [],
+                    action: {
+                        id: "12345",
+                        correlationId: "12345",
+                        name: "TEST_ACTION_WITH_HOOKS",
+                        params: [7, 8, 9],
+                    },
+                    prevState: '{"count": 0 }',
+                    nextState: '{"count": 3 }',
+                    timestamp: new Date().toISOString(),
+                    executionTime: null,
+                };
 
-            const callback = sinon.stub().callsFake(state => JSON.parse(state));
-            const result = Result.fromJSON(json, callback);
+                await Result.fromJSON(json);
 
-            expect(callback.callCount).to.equal(2); // Ensure the callback was called for both prevState and nextState
-            expect(result.prevState).to.deep.equal({ count: 0 });
-            expect(result.nextState).to.deep.equal({ count: 3 });
+                sinon.assert.calledWith(beforeDeserializeStateStub, '{"count": 0 }', '{"count": 3 }');
+                sinon.assert.calledWith(afterDeserializeStateStub, '{"count": 0 }', '{"count": 3 }');
+            } finally {
+                Hooks.unregister("beforeDeserializeState", beforeDeserializeStateStub);
+                Hooks.unregister("afterDeserializeState", afterDeserializeStateStub);
+            }
         });
-
     });
 
     describe("toJSON", () => {

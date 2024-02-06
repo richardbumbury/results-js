@@ -211,7 +211,7 @@ export class Issue<S, P, C> extends Error {
      *
      * @throws When the JSON structure is invalid or essential properties are missing.
      */
-    public static fromJSON<S, P, C>(json: IssueJSON<S, P, C>): Issue<S, P, C> {
+    public static async fromJSON<S, P, C>(json: IssueJSON<S, P, C>): Promise<Issue<S, P, C>> {
         if (typeof json !== 'object' || !json.action || !json.result || !json.result.errors ) {
             throw new Error("Invalid JSON structure for Issue.");
         }
@@ -223,7 +223,7 @@ export class Issue<S, P, C> extends Error {
             correlationId: json.action.correlationId
         });
 
-        const result = Result.fromJSON<S, P, C>(json.result, undefined)
+        const result = await Result.fromJSON<S, P, C>(json.result)
 
         return new Issue<S, P, C>(
             json.message,

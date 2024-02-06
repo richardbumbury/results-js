@@ -2,6 +2,7 @@ import { randomUUID as uuid } from "crypto";
 import { diff, Diff } from "deep-diff";
 import { ResultJSON } from "../__interfaces";
 import { Action } from "./action";
+import { Hooks } from "./hooks";
 
 /**
  * Represents the outcome of an action performed on a state.
@@ -244,7 +245,7 @@ export class Result<S, P, C> {
      *
      * @throws When the JSON structure is invalid or essential properties are missing.
      */
-    public static fromJSON<S, P, C>(json: ResultJSON<S, P, C>, callback?: (state: any) => S): Result<S, P, C> {
+    public static async fromJSON<S, P, C>(json: ResultJSON<S, P, C>): Promise<Result<S, P, C>> {
         if (typeof json.success !== 'boolean' || !json.action || !Array.isArray(json.errors)) {
             throw new Error("Invalid JSON structure for Result.");
         }
@@ -258,8 +259,12 @@ export class Result<S, P, C> {
 
         const errors = json.errors.map(e => new Error(e.message));
 
-        const nextState = callback ? callback(json.nextState) : json.nextState;
-        const prevState = callback ? callback(json.prevState) : json.prevState;
+        await Hooks.invoke("beforeDeserializeState", json.prevState, json.nextState);
+
+        let nextState = json.nextState;
+        let prevState = json.prevState;
+
+        await Hooks.invoke("afterDeserializeState", prevState, nextState);
 
         return new Result<S, P, C>(
             json.success,

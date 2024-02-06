@@ -103,7 +103,7 @@ describe("Issue", () => {
             warn.restore();
         });
 
-        it("should create an Issue instance from valid JSON", () => {
+        it("should create an Issue instance from valid JSON", async () => {
             const actionJSON = {
                 id: "12345",
                 correlationId: "12345",
@@ -135,7 +135,7 @@ describe("Issue", () => {
                 executionTime: null,
             };
 
-            const issue = Issue.fromJSON(issueJSON);
+            const issue = await Issue.fromJSON(issueJSON);
 
             expect(issue).to.be.an.instanceof(Issue);
             expect(issue.action.name).to.equal(actionJSON.name);
