@@ -1,6 +1,6 @@
 import { randomUUID as uuid } from "crypto";
 import { diff, Diff } from "deep-diff";
-import { ResultJSON } from "../interfaces";
+import { IResultJSON } from "../interfaces";
 import { Action } from "./action";
 import { Hooks } from "./hooks";
 
@@ -245,7 +245,7 @@ export class Result<S, P, C> {
      *
      * @throws When the JSON structure is invalid or essential properties are missing.
      */
-    public static async fromJSON<S, P, C>(json: ResultJSON<S, P, C>): Promise<Result<S, P, C>> {
+    public static async fromJSON<S, P, C>(json: IResultJSON<S, P, C>): Promise<Result<S, P, C>> {
         if (typeof json.success !== 'boolean' || !json.action || !Array.isArray(json.errors)) {
             throw new Error("Invalid JSON structure for Result.");
         }
@@ -285,7 +285,7 @@ export class Result<S, P, C> {
      *
      * @returns An object representing the result's serializable state.
      */
-    public toJSON(): ResultJSON<S, P, C> {
+    public toJSON(): IResultJSON<S, P, C> {
         return {
             id: this._id,
             correlationId: this.correlationId,

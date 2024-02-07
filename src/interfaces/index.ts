@@ -1,6 +1,4 @@
-export { ActionJSON } from "./action-json";
-export { ResultJSON } from "./result-json";
-export { IssueJSON } from "./issue-json";
-export { Digest } from "./digest";
-export { Effect } from "./effect";
-
+export { IActionJSON } from "./action-json";
+export { IResultJSON } from "./result-json";
+export { IIssueJSON } from "./issue-json";
+export { IEffect } from "./effect";

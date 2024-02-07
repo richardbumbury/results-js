@@ -6,7 +6,7 @@
  * @template P The type of parameters the action accepts, reflected in the serialized data.
  * @template C The type of content produced by the action, reflected in the serialized data.
  */
-export interface ResultJSON<S, P, C> {
+export interface IResultJSON<S, P, C> {
     /**
      * The unique identifier for the result instance, automatically generated during result creation.
      */

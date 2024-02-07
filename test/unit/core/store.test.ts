@@ -1,6 +1,6 @@
 import * as sinon from "sinon";
 import { expect } from "chai";
-import { Effect } from "../../../src/interfaces";
+import { IEffect } from "../../../src/interfaces";
 import { Store, Action, Result, Issue, Hooks } from "../../../src/core";
 
 describe("Store", () => {
@@ -54,7 +54,7 @@ describe("Store", () => {
 
         it("should successfully apply an action and update the state", async function() {
             const store = Store.create({ count: 0 });
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -87,7 +87,7 @@ describe("Store", () => {
 
         it("should return an issue when the exec function throws an error", async function() {
             const store = Store.create({ count: 0 });
-            const action = Action.create("TEST_ACTION", [-1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+            const action = Action.create("TEST_ACTION", [-1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -115,7 +115,7 @@ describe("Store", () => {
 
         it("should return an issue when the state is directly mutated in development mode", async function() {
             const store = Store.create({ count: 0 });
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -143,7 +143,7 @@ describe("Store", () => {
 
         it("should invoke before-state-change and after-state-change hooks", async function() {
             const store = Store.create({ count: 0 });
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -172,7 +172,7 @@ describe("Store", () => {
 
         it("should invoke after-action-cleanup hook in the finally block", async function() {
             const store = Store.create({ count: 0 });
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));

@@ -1,4 +1,4 @@
-import { ResultJSON } from "./result-json";
+import { IResultJSON } from "./result-json";
 
 /**
  * Represents the JSON structure of an Issue object for serialization and deserialization purposes.
@@ -8,7 +8,7 @@ import { ResultJSON } from "./result-json";
  * @template P The type of parameters the action accepts, reflected in the serialized data.
  * @template C The type of content produced by the action, reflected in the serialized data.
  */
-export interface IssueJSON<S, P, C> {
+export interface IIssueJSON<S, P, C> {
     /**
      * The unique identifier for the issue instance, automatically generated during issue creation.
      */
@@ -42,7 +42,7 @@ export interface IssueJSON<S, P, C> {
     /**
      * A serialized representation of the result associated with this issue, if applicable.
      */
-    result: ResultJSON<S, P, C> | null;
+    result: IResultJSON<S, P, C> | null;
 
     /**
      * The timestamp when the result was created, in ISO string format.

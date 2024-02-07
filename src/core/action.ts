@@ -1,5 +1,5 @@
 import { randomUUID as uuid } from "crypto";
-import { ActionJSON, Effect } from "../interfaces";
+import { IActionJSON, IEffect } from "../interfaces";
 import { Ledger } from "./ledger";
 
 /**
@@ -35,7 +35,7 @@ export class Action<P , S , C > {
      * It takes the current state and parameters, and returns a Promise that resolves to an Effect.
      * The Effect represents the effect of an action's execution, including its direct outcome and impact on the state.
      */
-    private _exec: (currentState: S, params: P[]) => Promise<Effect<S, C>>;
+    private _exec: (currentState: S, params: P[]) => Promise<IEffect<S, C>>;
 
     /**
      * The timestamp when the action was created or initialized.
@@ -50,7 +50,7 @@ export class Action<P , S , C > {
      * @param exec The function that defines the execution logic of the action.
      * @param correlationId An optional identifier used to correlate this action with related actions.
      */
-    private constructor(name: string, params: P[], exec: (currentState: S, params: P[]) => Promise<Effect<S, C>>, correlationId?: string) {
+    private constructor(name: string, params: P[], exec: (currentState: S, params: P[]) => Promise<IEffect<S, C>>, correlationId?: string) {
         this._id = uuid();
         this._correlationId = correlationId
         this._name = name;
@@ -114,7 +114,7 @@ export class Action<P , S , C > {
      *
      * @returns A new instance of the Action class.
      */
-    public static create<P, S, C>(name: string, params: P[], exec: (currentState: S, params: P[]) => Promise<Effect<S, C>>, correlationId?: string): Action<P, S, C> {
+    public static create<P, S, C>(name: string, params: P[], exec: (currentState: S, params: P[]) => Promise<IEffect<S, C>>, correlationId?: string): Action<P, S, C> {
         if (!Ledger.has(name)){
             Ledger.set(name, exec)
         }
@@ -161,7 +161,7 @@ export class Action<P , S , C > {
      *
      * @returns An object containing the action's serializable data: name, parameters, and timestamp.
      */
-    public toJSON(): ActionJSON<P> {
+    public toJSON(): IActionJSON<P> {
         Ledger.set(this._id, this._exec);
 
         return {
@@ -190,7 +190,7 @@ export class Action<P , S , C > {
      *
      * @returns The instance of the Action class.
      */
-    public attach(exec: (currentState: S, params: P[]) => Promise<Effect<S, C>>): this {
+    public attach(exec: (currentState: S, params: P[]) => Promise<IEffect<S, C>>): this {
         this._exec = async (currentState, params) => exec(currentState, params);
 
         return this;
@@ -207,7 +207,7 @@ export class Action<P , S , C > {
      *
      * @throws An error if the exec function has not been attached to the action.
      */
-    public async execute(state: S): Promise<Effect<S, C>> {
+    public async execute(state: S): Promise<IEffect<S, C>> {
         if (!this._exec) {
             throw new Error("Exec function not implemented. Attach exec function using attach().");
         }

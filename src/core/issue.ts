@@ -1,5 +1,5 @@
 import { randomUUID as uuid } from "crypto";
-import { IssueJSON } from "../interfaces";
+import { IIssueJSON } from "../interfaces";
 import { Action } from "./action";
 import { Result } from "./result";
 
@@ -211,7 +211,7 @@ export class Issue<S, P, C> extends Error {
      *
      * @throws When the JSON structure is invalid or essential properties are missing.
      */
-    public static async fromJSON<S, P, C>(json: IssueJSON<S, P, C>): Promise<Issue<S, P, C>> {
+    public static async fromJSON<S, P, C>(json: IIssueJSON<S, P, C>): Promise<Issue<S, P, C>> {
         if (typeof json !== 'object' || !json.action || !json.result || !json.result.errors ) {
             throw new Error("Invalid JSON structure for Issue.");
         }
@@ -240,7 +240,7 @@ export class Issue<S, P, C> extends Error {
      *
      * @returns An object representing the issue's serializable state.
      */
-    public toJSON(): IssueJSON<S, P, C> {
+    public toJSON(): IIssueJSON<S, P, C> {
         return {
             id: this._id,
             correlationId: this._correlationId,

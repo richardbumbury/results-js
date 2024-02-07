@@ -4,7 +4,7 @@
  * @template S The type of the state affected by the action.
  * @template C The type of the content produced by the action.
  */
-export interface Effect<S, C> {
+export interface IEffect<S, C> {
 
     /**
      * The direct outcome or result produced by the action's execution.

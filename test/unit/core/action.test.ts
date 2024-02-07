@@ -1,6 +1,6 @@
 import * as sinon from "sinon";
 import { expect } from "chai";
-import { Effect } from "../../../src/interfaces";
+import { IEffect } from "../../../src/interfaces";
 import { Action, Ledger } from "../../../src/core";
 
 describe("Action", () => {
@@ -8,7 +8,7 @@ describe("Action", () => {
         it("should create an Action instance with the correct properties", () => {
             const name = "TEST_ACTION";
             const params = [1, 2, 3];
-            const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+            const exec = (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -53,7 +53,7 @@ describe("Action", () => {
         });
 
         it("should reattach an exec function from the Ledger if available", async () => {
-            const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+            const exec = (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== 'object' || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -167,7 +167,7 @@ describe("Action", () => {
         it("should correctly serialize an action's properties to a JSON object", () => {
             const name = "TEST_ACTION";
             const params = [1, 2, 3];
-            const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+            const exec = (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -204,7 +204,7 @@ describe("Action", () => {
         it("should not include the exec function in the serialized JSON", () => {
             const name = "TEST_ACTION";
             const params = [1, 2, 3];
-            const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+            const exec = (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -241,7 +241,7 @@ describe("Action", () => {
         it("should register exec function in Ledger during action creation", async () => {
             const name = "TEST_ACTION";
             const params = [1, 2, 3];
-            const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+            const exec = (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -271,7 +271,7 @@ describe("Action", () => {
         it("should allow the serialized JSON to be stringified", () => {
             const name = "TEST_ACTION";
             const params = [1, 2, 3];
-            const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+            const exec = (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -303,7 +303,7 @@ describe("Action", () => {
         it("should return the correct string representation for an action", function () {
             const name = "TEST_ACTION";
             const params = [1, 2, 3];
-            const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+            const exec = (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -334,7 +334,7 @@ describe("Action", () => {
         it("should replace an existing exec function with a new one", async () => {
             const name = "TEST_ACTION";
             const params = [1, 2, 3];
-            const exec_1 = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+            const exec_1 = (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -355,7 +355,7 @@ describe("Action", () => {
                 })
             };
 
-            const exec_2 = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+            const exec_2 = (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -391,7 +391,7 @@ describe("Action", () => {
         it("should execute the action with the attached exec function", async () => {
             const name = "TEST_ACTION";
             const params = [1, 2, 3];
-            const exec = (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+            const exec = (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));

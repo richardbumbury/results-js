@@ -1,12 +1,12 @@
 import * as sinon from "sinon";
 import { expect } from "chai";
-import { Effect } from "../../../src/interfaces";
+import { IEffect } from "../../../src/interfaces";
 import { Action, Result, Issue } from "../../../src/core";
 
 describe("Issue", () => {
     describe("fromAction", () => {
         it("should create an Issue with the correct error message", () => {
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -34,7 +34,7 @@ describe("Issue", () => {
         });
 
         it("should create an Issue with the correct action", () => {
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -62,7 +62,7 @@ describe("Issue", () => {
         });
 
         it("should create an Issue with a failure Result", () => {
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -104,7 +104,7 @@ describe("Issue", () => {
         });
 
         it("should create an Issue instance from valid JSON", async () => {
-            const actionJSON = {
+            const IActionJSON = {
                 id: "12345",
                 correlationId: "12345",
                 name: "TEST_ACTION",
@@ -117,7 +117,7 @@ describe("Issue", () => {
                 success: false,
                 content: null,
                 errors: [{ message: "Test error", name: "Error" }],
-                action: actionJSON,
+                action: IActionJSON,
                 prevState: null,
                 nextState: null,
                 timestamp: new Date().toISOString(),
@@ -129,7 +129,7 @@ describe("Issue", () => {
                 correlationId: "12345",
                 name: "IssueName",
                 message: "Test issue",
-                action: actionJSON,
+                action: IActionJSON,
                 result: resultJSON,
                 timestamp: new Date().toISOString(),
                 executionTime: null,
@@ -138,14 +138,14 @@ describe("Issue", () => {
             const issue = await Issue.fromJSON(issueJSON);
 
             expect(issue).to.be.an.instanceof(Issue);
-            expect(issue.action.name).to.equal(actionJSON.name);
+            expect(issue.action.name).to.equal(IActionJSON.name);
             expect(issue.result.errors[0].message).to.equal(resultJSON.errors[0].message);
         });
     });
 
     describe("toJSON", () => {
         it("serializes an Issue instance to JSON", () => {
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -182,7 +182,7 @@ describe("Issue", () => {
         });
 
         it("should allow the serialized JSON to be stringified", () => {
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -214,7 +214,7 @@ describe("Issue", () => {
 
     describe("toString", function() {
         it("should return a string representation for an issue without a correlation ID", function() {
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));

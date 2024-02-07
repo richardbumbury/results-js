@@ -1,4 +1,4 @@
-import { Effect } from "../interfaces";
+import { IEffect } from "../interfaces";
 import { Action } from "./action";
 
 /**
@@ -9,7 +9,7 @@ export class Ledger {
     /**
      * A Map serving as a registry for exec functions. It maps action IDs (string) to their corresponding exec functions.
      */
-    private static registry = new Map<string, (currentState: any, params: any) => Promise<Effect<any, any>>>();
+    private static registry = new Map<string, (currentState: any, params: any) => Promise<IEffect<any, any>>>();
 
     /**
      * Registers an exec function for a specific action. If the action already exists, an error is thrown.
@@ -21,7 +21,7 @@ export class Ledger {
      *
      * @throws Error if the exec function for the given action is already registered.
      */
-    public static set(id: string, exec: (currentState: any, params: any) => Promise<Effect<any, any>>): boolean {
+    public static set(id: string, exec: (currentState: any, params: any) => Promise<IEffect<any, any>>): boolean {
         if (Ledger.registry.has(id)) {
             throw new Error(`Exec function for action '${id}' is already registered.`);
         }
@@ -40,7 +40,7 @@ export class Ledger {
      *
      * @throws Error if the exec function for the given action is not registered.
      */
-    public static get(id: string): (currentState: any, params: any) => Promise<Effect<any, any>> {
+    public static get(id: string): (currentState: any, params: any) => Promise<IEffect<any, any>> {
         const exec = Ledger.registry.get(id);
 
         if (!exec) {
