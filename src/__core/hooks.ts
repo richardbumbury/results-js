@@ -101,7 +101,7 @@ export class Hooks {
      */
     public static async invoke(e: string, ...args: any[]): Promise<void> {
         const registered = Hooks.hooks.get(e);
-        
+
         if (registered) {
             // Map each hook function to a promise and resolve it immediately if it's not asynchronous
             const promises = registered.map(f => {

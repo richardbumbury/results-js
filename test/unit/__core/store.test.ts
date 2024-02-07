@@ -1,32 +1,59 @@
-import sinon from "sinon";
+import * as sinon from "sinon";
 import { expect } from "chai";
 import { Effect } from "../../../src/__interfaces";
-import { Store, Action, Result, Issue } from "../../../src/__core";
+import { Store, Action, Result, Issue, Hooks } from "../../../src/__core";
 
 describe("Store", () => {
-    describe("create", () => {
-        it("should create a Store instance with valid parameters", () => {
-            const store = Store.create({ value: 0 }, 50, 86400000, {}, 10, { customData: "test" });
-            expect(store).to.be.an.instanceof(Store);
+    describe("create", function() {
+        it("should create a store with the given initial state", function() {
+            const state = { count: 0 };
+            const store = Store.create(state, "test");
+
+            expect(store.state).to.deep.equal(state);
         });
 
-        it("should create a Store instance with default parameters", () => {
-            const store = Store.create({ value: 0 });
-            expect(store).to.be.an.instanceof(Store);
+        it("should set the mode of the store correctly", function() {
+            const state = { count: 0 };
+            const store = Store.create(state, "test");
+
+            expect(store.mode).to.equal("test");
         });
 
-        it("should throw an error for invalid params", () => {
-            expect(() => Store.create({ value: 0 }, 0)).to.throw(Error);
-            expect(() => Store.create({ value: 0 }, -1)).to.throw(Error);
-            expect(() => Store.create({ value: 0 }, 100001)).to.throw(Error);
-            expect(() => Store.create({ value: 0 }, 50, 3599999)).to.throw(Error);
-            expect(() => Store.create({ value: 0 }, 50, 604800001)).to.throw(Error);
+        it("should merge user-defined metadata with default metadata", function() {
+            const state = { count: 0 };
+            const metadata = { version: "1.0.0"};
+            const store = Store.create(state, "test", metadata);
+
+            expect(store.metadata).to.include(metadata);
+            expect(store.metadata).to.have.keys("timestamp", "environment", "version");
+            expect(store.metadata.environment).to.equal("test");
+            expect(store.metadata.version).to.equal("1.0.0");
+        });
+
+        it("should use default values for mode and metadata if not provided", function() {
+            const state = { count: 0 };
+            const store = Store.create(state);
+
+            expect(store.mode).to.equal("development");
+            expect(store.metadata).to.have.keys("timestamp", "environment");
+            expect(store.metadata.environment).to.equal("development");
         });
     });
 
-    describe("add", () => {
-        it("should add and apply an action successfully", async () => {
-            const store = Store.create({ value: 0 });
+    describe("apply", function() {
+        let invoke: any;
+
+        beforeEach(function() {
+            invoke = sinon.stub(Hooks, "invoke").resolves();
+            sinon.stub(console, "error");
+        });
+
+        afterEach(function() {
+            sinon.restore();
+        });
+
+        it("should successfully apply an action and update the state", async function() {
+            const store = Store.create({ count: 0 });
             const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
@@ -48,22 +75,19 @@ describe("Store", () => {
                 })
             });
 
-            const callback = () => Promise.resolve(undefined);
-
-            const result = await store.add(action, store.state, callback);
-            expect(result).to.be.instanceOf(Result);
+            const result = await store.apply(action);
 
             if (result instanceof Result) {
+                expect(result).to.be.instanceOf(Result);
                 expect(result.success).to.be.true;
-            } else {
-                throw new Error("Result is not an instance of Result");
             }
+
+            expect(store.state).to.deep.equal({ count: 3 });
         });
 
-
-        it("should create a new digest after reaching the digest interval", async () => {
-            const store = Store.create({ value: 0 }, 50, 86400000, undefined, 1);
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+        it("should return an issue when the exec function throws an error", async function() {
+            const store = Store.create({ count: 0 });
+            const action = Action.create("TEST_ACTION", [-1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -77,299 +101,49 @@ describe("Store", () => {
                         return;
                     }
 
-                    const content = params.length;
-                    const transform = (state: any) => ({ ...state, count: content });
+                    currentState.count += params.length; // Directly mutates the state
 
-                    resolve({ content, transform });
+                    resolve({ content: null, transform: (state: any) => state });
                 })
             });
 
-            const callback = sinon.spy();
-
-            await store.add(action, store.state, callback);
-            expect(callback).to.have.been.called;
-        });
-
-        it("should handle action application failure", async () => {
-            const store = Store.create({ value: 0 });
-            const action = Action.create("FAIL_ACTION", [-1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise((resolve, reject) => {
-                    if (typeof currentState !== "object" || currentState === null) {
-                        reject(new Error("Invalid state: State must be a non-null object"));
-
-                        return;
-                    }
-
-                    if (params.some(param => param < 0)) {
-                        reject(new Error("Invalid parameters: Negative values are not allowed"));
-
-                        return;
-                    }
-
-                    const content = params.length;
-                    const transform = (state: any) => ({ ...state, count: content });
-
-                    resolve({ content, transform });
-                })
-            });
-
-            const callback = () => Promise.resolve(undefined);
-            const original = console.error;
-
-            console.error = () => {};
-
-            const issue = await store.add(action, store.state, callback);
-
-            console.error = original;
-
-            expect(issue).to.be.instanceOf(Issue);
-        });
-
-        it("should update the store state with the outcome of the action", async () => {
-            const store = Store.create({ value: 0 });
-            const params = [1, 2, 3];
-            const action = Action.create("TEST_ACTION", params, async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise((resolve, reject) => {
-                    if (typeof currentState !== "object" || currentState === null) {
-                        reject(new Error("Invalid state: State must be a non-null object"));
-
-                        return;
-                    }
-
-                    if (params.some(param => param < 0)) {
-                        reject(new Error("Invalid parameters: Negative values are not allowed"));
-
-                        return;
-                    }
-
-                    const content = params.length;
-                    const transform = (state: any) => ({ ...state, count: content });
-
-                    resolve({ content, transform });
-                })
-            });
-
-            const callback = () => Promise.resolve(undefined);
-            const nextState = { ...store.state, count: params.length };
-
-            await store.add(action, store.state, callback);
-
-            expect(store.state).to.deep.equal(nextState);
-        });
-    });
-
-    describe("rerun", () => {
-        it("should successfully rerun an action", async () => {
-            const index = 0;
-            const store = Store.create({ value: 0 });
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise((resolve, reject) => {
-                    if (typeof currentState !== "object" || currentState === null) {
-                        reject(new Error("Invalid state: State must be a non-null object"));
-
-                        return;
-                    }
-
-                    if (params.some(param => param < 0)) {
-                        reject(new Error("Invalid parameters: Negative values are not allowed"));
-
-                        return;
-                    }
-
-                    const content = params.length;
-                    const transform = (state: any) => ({ ...state, count: content });
-
-                    resolve({ content, transform });
-                })
-            });
-
-            const callback = () => Promise.resolve(undefined);
-
-            await store.add(action, store.state, callback);
-
-            const result = await store.rerun(index, store.state, callback);
-
-            expect(result).to.be.instanceOf(Result);
-        });
-
-        it("should create a new digest after reaching the digest interval", async () => {
-            const index = 1;
-            const store = Store.create({ value: 0 }, 50, 86400000, undefined, 1);
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise((resolve, reject) => {
-                    if (typeof currentState !== "object" || currentState === null) {
-                        reject(new Error("Invalid state: State must be a non-null object"));
-
-                        return;
-                    }
-
-                    if (params.some(param => param < 0)) {
-                        reject(new Error("Invalid parameters: Negative values are not allowed"));
-
-                        return;
-                    }
-
-                    const content = params.length;
-                    const transform = (state: any) => ({ ...state, count: content });
-
-                    resolve({ content, transform });
-                })
-            });
-
-            const callback = sinon.spy();
-
-            await store.add(action, store.state, callback);
-            await store.rerun(index, store.state, callback);
-
-            expect(callback).to.have.been.calledOnce;
-        });
-
-        it("should handle action rerun failure", async () => {
-            const index = 1;
-            const store = Store.create({ value: 0 });
-            const action = Action.create("FAIL_ACTION", [-1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise((resolve, reject) => {
-                    if (typeof currentState !== "object" || currentState === null) {
-                        reject(new Error("Invalid state: State must be a non-null object"));
-
-                        return;
-                    }
-
-                    if (params.some(param => param < 0)) {
-                        reject(new Error("Invalid parameters: Negative values are not allowed"));
-
-                        return;
-                    }
-
-                    const content = params.length;
-                    const transform = (state: any) => ({ ...state, count: content });
-
-                    resolve({ content, transform });
-                })
-            });
-            const callback = () => Promise.resolve(undefined);
-            const original = console.error;
-
-            console.error = () => {};
-            await store.add(action, store.state);
-            console.error = original;
-
-            const issue = await store.rerun(index, store.state, callback);
-
-            expect(issue).to.be.instanceOf(Issue);
-        });
-
-        it("should maintain state consistency after rerun", async () => {
-            const index = 1;
-            const store = Store.create({ value: 0 });
-            const params = [1, 2, 3];
-            const action = Action.create("TEST_ACTION", params, async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise((resolve, reject) => {
-                    if (typeof currentState !== "object" || currentState === null) {
-                        reject(new Error("Invalid state: State must be a non-null object"));
-
-                        return;
-                    }
-
-                    if (params.some(param => param < 0)) {
-                        reject(new Error("Invalid parameters: Negative values are not allowed"));
-
-                        return;
-                    }
-
-                    const content = params.length;
-                    const transform = (state: any) => ({ ...state, count: content });
-
-                    resolve({ content, transform });
-                })
-            });
-
-            const callback = () => Promise.resolve(undefined);
-
-            await store.add(action, store.state, callback);
-            await store.rerun(index, store.state, callback);
-
-            const nextState = { ...store.state, count: params.length };
-
-            expect(store.state).to.deep.equal(nextState);
-        });
-    });
-
-    describe("reset", () => {
-        it("should successfully reset to previous state", async () => {
-            const store = Store.create({ value: 0 });
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise((resolve, reject) => {
-                    if (typeof currentState !== "object" || currentState === null) {
-                        reject(new Error("Invalid state: State must be a non-null object"));
-
-                        return;
-                    }
-
-                    if (params.some(param => param < 0)) {
-                        reject(new Error("Invalid parameters: Negative values are not allowed"));
-
-                        return;
-                    }
-
-                    const content = params.length;
-                    const transform = (state: any) => ({ ...state, count: content });
-
-                    resolve({ content, transform });
-                })
-            });
-
-            const callback = () => Promise.resolve(undefined);
-
-            await store.add(action, store.state, callback);
-
-            const result = await store.reset(store.state, callback);
-
-            expect(result).to.be.instanceOf(Result);
-        });
-
-        it("should create a new digest after reaching the digest interval", async () => {
-            const store = Store.create({ value: 0 }, 50, 86400000, undefined, 1);
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise((resolve, reject) => {
-                    if (typeof currentState !== "object" || currentState === null) {
-                        reject(new Error("Invalid state: State must be a non-null object"));
-
-                        return;
-                    }
-
-                    if (params.some(param => param < 0)) {
-                        reject(new Error("Invalid parameters: Negative values are not allowed"));
-
-                        return;
-                    }
-
-                    const content = params.length;
-                    const transform = (state: any) => ({ ...state, count: content });
-
-                    resolve({ content, transform });
-                })
-            });
-
-            const callback = sinon.spy();
-
-            await store.add(action, store.state, callback);
-            await store.reset(store.state, callback);
-
-            expect(callback).to.have.been.calledTwice;
-        });
-
-        it("should return an Issue if there are no actions to reset", async () => {
-            const store = Store.create({ value: 0 });
-            const callback = () => Promise.resolve(undefined);
-            const result = await store.reset(store.state, callback);
+            const result = await store.apply(action);
 
             expect(result).to.be.instanceOf(Issue);
+            expect(store.state).to.deep.equal({ count: 0 }); // State should not change due to action invokation failure.
         });
 
-        it("should handle action rerun failure", async () => {
-            const store = Store.create({ value: 0 });
-            const action = Action.create("FAIL_ACTION", [-1, 2, 3], (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+        it("should return an issue when the state is directly mutated in development mode", async function() {
+            const store = Store.create({ count: 0 });
+            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== "object" || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
+
+                        return;
+                    }
+
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+
+                        return;
+                    }
+
+                    currentState.count += params.length; // Directly mutates the state
+
+                    resolve({ content: null, transform: (state: any) => state });
+                })
+            });
+
+            const result = await store.apply(action);
+
+            expect(result).to.be.instanceOf(Issue);
+            expect(store.state).to.deep.equal({ count: 0 }); // State should not change due to direct mutation
+        });
+
+        it("should invoke before-state-change and after-state-change hooks", async function() {
+            const store = Store.create({ count: 0 });
+            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -390,476 +164,110 @@ describe("Store", () => {
                 })
             });
 
-            const callback = () => Promise.resolve(undefined);
-            const original = console.error;
+            await store.apply(action);
 
-            console.error = () => {};
-            await store.add(action, store.state, callback);
-            console.error = original;
+            sinon.assert.calledWith(invoke, "before-state-change", sinon.match.any);
+            sinon.assert.calledWith(invoke, "after-state-change", sinon.match.any);
+        });
 
-            const issue = await store.reset(store.state, callback);
+        it("should invoke after-action-cleanup hook in the finally block", async function() {
+            const store = Store.create({ count: 0 });
+            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== "object" || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
 
-            expect(issue).to.be.instanceOf(Issue);
+                        return;
+                    }
+
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+
+                        return;
+                    }
+
+                    const content = params.length;
+                    const transform = (state: any) => ({ ...state, count: content });
+
+                    resolve({ content, transform });
+                })
+            });
+
+            await store.apply(action);
+
+            sinon.assert.calledWith(invoke, "after-action-cleanup", action, sinon.match.any);
         });
     });
 
-    describe("retry", () => {
-        it("should successfully retry the next action", async () => {
-            const store = Store.create({ value: 0 });
-            const success = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise((resolve, reject) => {
-                    if (typeof currentState !== "object" || currentState === null) {
-                        reject(new Error("Invalid state: State must be a non-null object"));
 
-                        return;
-                    }
+    describe("hydrate", function() {
+        let store: Store<any>;
+        let consoleError: any;
 
-                    if (params.some(param => param < 0)) {
-                        reject(new Error("Invalid parameters: Negative values are not allowed"));
-
-                        return;
-                    }
-
-                    const content = params.length;
-                    const transform = (state: any) => ({ ...state, count: content });
-
-                    resolve({ content, transform });
-                })
-            });
-
-            const failure = Action.create("FAIL_ACTION", [-1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise((resolve, reject) => {
-                    if (typeof currentState !== "object" || currentState === null) {
-                        reject(new Error("Invalid state: State must be a non-null object"));
-
-                        return;
-                    }
-
-                    if (params.some(param => param < 0)) {
-                        reject(new Error("Invalid parameters: Negative values are not allowed"));
-
-                        return;
-                    }
-
-                    const content = params.length;
-                    const transform = (state: any) => ({ ...state, count: content });
-
-                    resolve({ content, transform });
-                })
-            });
-
-            const callback = () => Promise.resolve(undefined);
-
-            await store.add(success, store.state, callback);
-
-            const original = console.error;
-
-            console.error = () => {};
-            await store.add(failure, store.state, callback);
-            console.error = original;
-
-            const issue = await store.retry(store.state, callback);
-
-            expect(issue).to.be.instanceOf(Issue);
+        beforeEach(function() {
+            store = Store.create({});
+            consoleError = sinon.stub(console, "error");
         });
 
-        it("should create a new digest after reaching the digest interval", async () => {
-            const store = Store.create({ value: 0 }, 50, 86400000, undefined, 1);
-            const success = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise((resolve, reject) => {
-                    if (typeof currentState !== "object" || currentState === null) {
-                        reject(new Error("Invalid state: State must be a non-null object"));
-
-                        return;
-                    }
-
-                    if (params.some(param => param < 0)) {
-                        reject(new Error("Invalid parameters: Negative values are not allowed"));
-
-                        return;
-                    }
-
-                    const content = params.length;
-                    const transform = (state: any) => ({ ...state, count: content });
-
-                    resolve({ content, transform });
-                })
-            });
-
-            const failure = Action.create("FAIL_ACTION", [-1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise((resolve, reject) => {
-                    if (typeof currentState !== "object" || currentState === null) {
-                        reject(new Error("Invalid state: State must be a non-null object"));
-
-                        return;
-                    }
-
-                    if (params.some(param => param < 0)) {
-                        reject(new Error("Invalid parameters: Negative values are not allowed"));
-
-                        return;
-                    }
-
-                    const content = params.length;
-                    const transform = (state: any) => ({ ...state, count: content });
-
-                    resolve({ content, transform });
-                })
-            });
-
-            const callback = sinon.spy();
-
-            await store.add(success, store.state, callback);
-
-            const original = console.error;
-
-            console.error = () => {};
-            await store.add(failure, store.state, callback);
-            console.error = original;
-            await store.retry(store.state, callback);
-
-            expect(callback).to.have.been.calledOnce;
+        afterEach(function() {
+            sinon.restore();
         });
 
-        it("should return an Issue if there are no actions to retry", async () => {
-            const store = Store.create({ value: 0 });
-            const callback = () => Promise.resolve(undefined);
-            const result = await store.retry(store.state, callback);
+        it("should successfully hydrate the state", async function() {
+            const initialState = JSON.stringify({ count: 10 });
+            const beforeHydrateSpy = sinon.spy();
+            const afterHydrateSpy = sinon.spy();
+            const stateValidationSpy = sinon.spy();
 
-            expect(result).to.be.instanceOf(Issue);
-        });
+            Hooks.register("before-hydrate", beforeHydrateSpy);
+            Hooks.register("after-hydrate", afterHydrateSpy);
+            Hooks.register("state-validation", stateValidationSpy);
 
-        it("should handle action retry failure", async () => {
-            const store = Store.create({ value: 0 });
-            const action = Action.create("FAIL_ACTION", [-1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise((resolve, reject) => {
-                    if (typeof currentState !== "object" || currentState === null) {
-                        reject(new Error("Invalid state: State must be a non-null object"));
-
-                        return;
-                    }
-
-                    if (params.some(param => param < 0)) {
-                        reject(new Error("Invalid parameters: Negative values are not allowed"));
-
-                        return;
-                    }
-
-                    const content = params.length;
-                    const transform = (state: any) => ({ ...state, count: content });
-
-                    resolve({ content, transform });
-                })
-            });
-
-            const callback = () => Promise.resolve(undefined);
-
-            const original = console.error;
-
-            console.error = () => {};
-            await store.add(action, store.state, callback);
-            console.error = original;
-
-            const issue = await store.retry(store.state, callback);
-
-            expect(issue).to.be.instanceOf(Issue);
-        });
-    });
-
-    describe("hydrate", () => {
-        it("should successfully hydrate the state with the given digest", async () => {
-            const store = Store.create({ value: 0 });
-            const digestId = "a14a4a6d-7f7c-405c-aada-22aac93d902b";
-            const callback = sinon.stub().resolves(JSON.stringify({ state: { value: 10 }, history: [] }));
-
-            const result = await store.hydrate(digestId, callback);
-
-            expect(callback).to.have.been.calledWith(digestId);
-            expect(result).to.be.instanceOf(Result);
-            expect(store.state).to.deep.equal({ value: 10 });
-            expect(store.history).to.deep.equal([]);
-        });
-
-        it("should return an Issue if the digest is not found", async () => {
-            const store = Store.create({ value: 0 });
-            const digestId = "022b0141-4fa8-489a-845a-e5e90e821bbc";
-            const callback = sinon.stub().resolves(null);
-
-            const original = console.error;
-
-            console.error = () => {};
-
-            const result = await store.hydrate(digestId, callback);
-
-            console.error = original;
-
-            expect(result).to.be.instanceOf(Issue);
-        });
-
-        it("should handle store hydration errors", async () => {
-            const store = Store.create({ value: 0 });
-            const digestId = "996fc8db-9b0c-4e51-bc54-4dbb5bf906d5";
-            const callback = sinon.stub().rejects(new Error("Error fetching digest"));
-
-            const original = console.error;
-
-            console.error = () => {};
-
-            const result = await store.hydrate(digestId, callback);
-
-            console.error = original;
-
-            expect(result).to.be.instanceOf(Issue);
-        });
-    });
-
-    describe("subscriber.add", () => {
-        it("should successfully add a subscriber", () => {
-            const store = Store.create({ value: 0 });
-            const callback = () => {};
-            const result = store.subscriber.add(callback);
+            const result = await store.hydrate(initialState);
 
             expect(result).to.be.true;
-        });
-    });
-
-    describe("subscriber.alert", () => {
-        it("should notify all subscribers on state update", () => {
-            const store = Store.create({ value: 0 });
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise((resolve, reject) => {
-                    if (typeof currentState !== "object" || currentState === null) {
-                        reject(new Error("Invalid state: State must be a non-null object"));
-
-                        return;
-                    }
-
-                    if (params.some(param => param < 0)) {
-                        reject(new Error("Invalid parameters: Negative values are not allowed"));
-
-                        return;
-                    }
-
-                    const content = params.length;
-                    const transform = (state: any) => ({ ...state, count: content });
-
-                    resolve({ content, transform });
-                })
-            });
-
-            const callback = sinon.spy();
-
-            store.subscriber.add(callback);
-
-            const nextState = { value: 1 }
-            const result = store.subscriber.alert(action, nextState);
-
-            expect(callback).to.have.been.calledWith(action, nextState);
-            expect(result).to.be.true;
+            expect(store.state).to.deep.equal({ count: 10 });
+            expect(beforeHydrateSpy.calledOnceWithExactly(initialState)).to.be.true;
+            expect(afterHydrateSpy.calledOnceWithExactly({ count: 10 })).to.be.true;
+            expect(stateValidationSpy.calledOnceWithExactly({ count: 10 })).to.be.true;
         });
 
-        it("should handle failure when notifying subscribers", () => {
-            const store = Store.create({ value: 0 });
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise((resolve, reject) => {
-                    if (typeof currentState !== "object" || currentState === null) {
-                        reject(new Error("Invalid state: State must be a non-null object"));
-
-                        return;
-                    }
-
-                    if (params.some(param => param < 0)) {
-                        reject(new Error("Invalid parameters: Negative values are not allowed"));
-
-                        return;
-                    }
-
-                    const content = params.length;
-                    const transform = (state: any) => ({ ...state, count: content });
-
-                    resolve({ content, transform });
-                })
-            });
-
-
-            store.subscriber.add(() => { throw new Error("Error in callback"); });
-
-            const original = console.error;
-
-            console.error = () => {};
-
-            const result = store.subscriber.alert(action, { value: 1 });
-
-            console.error = original;
+        it("should return false and log error if JSON parsing fails", async function() {
+            const invalidState = "not a valid JSON";
+            const result = await store.hydrate(invalidState);
 
             expect(result).to.be.false;
-        });
-    });
-
-    describe("subscriber.watch", () => {
-        it("should successfully add a watch subscriber and notify it on matching action", () => {
-            const store = Store.create({ value: 0 });
-            const callbank = sinon.spy();
-            const filter = (action: any, newState: any) => action.name === "TEST_ACTION";
-
-            const result = store.subscriber.watch(filter, callbank);
-            expect(result).to.be.true;
-
-            const success = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise((resolve, reject) => {
-                    if (typeof currentState !== "object" || currentState === null) {
-                        reject(new Error("Invalid state: State must be a non-null object"));
-
-                        return;
-                    }
-
-                    if (params.some(param => param < 0)) {
-                        reject(new Error("Invalid parameters: Negative values are not allowed"));
-
-                        return;
-                    }
-
-                    const content = params.length;
-                    const transform = (state: any) => ({ ...state, count: content });
-
-                    resolve({ content, transform });
-                })
-            });
-
-            const failure = Action.create("FAIL_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise((resolve, reject) => {
-                    if (typeof currentState !== "object" || currentState === null) {
-                        reject(new Error("Invalid state: State must be a non-null object"));
-
-                        return;
-                    }
-
-                    if (params.some(param => param < 0)) {
-                        reject(new Error("Invalid parameters: Negative values are not allowed"));
-
-                        return;
-                    }
-
-                    const content = params.length;
-                    const transform = (state: any) => ({ ...state, count: content });
-
-                    resolve({ content, transform });
-                })
-            });
-
-            store.subscriber.alert(success, { value: 1 });
-            store.subscriber.alert(failure, { value: 2 });
-
-            expect(callbank).to.have.been.calledOnceWith(success, { value: 1 });
-            expect(callbank).not.to.have.been.calledWith(failure, { value: 2 });
-        });
-    });
-
-    describe("middleware.add", () => {
-        it("should successfully add a middleware", () => {
-            const store = Store.create({ value: 0 });
-            const middleware = sinon.spy();
-            const result = store.middleware.add(middleware);
-
-            expect(result).to.be.true;
+            sinon.assert.calledWith(consoleError, sinon.match.string, sinon.match.instanceOf(Error));
         });
 
-        it("should successfully add a middleware with a filter", () => {
-            const store = Store.create({ value: 0 });
-            const middleware = sinon.spy();
-            const filter = (action: any) => action.name === "TEST_ACTION";
-            const result = store.middleware.add(middleware, filter);
+        it("should handle custom validation failure during hydration", async function() {
+            const initialState = JSON.stringify({ count: 10 });
+            const validationSpy = sinon.spy(() => { throw new Error("Validation failed"); });
 
-            expect(result).to.be.true;
-        });
-    });
+            Hooks.register("state-validation", validationSpy);
 
-    describe("middleware.apply", () => {
-        it("should apply all registered middlewares to an action", () => {
-            const store = Store.create({ value: 0 });
-            const middlewareFunction = sinon.spy();
-            store.middleware.add(middlewareFunction);
+            const result = await store.hydrate(initialState);
 
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise((resolve, reject) => {
-                    if (typeof currentState !== "object" || currentState === null) {
-                        reject(new Error("Invalid state: State must be a non-null object"));
-
-                        return;
-                    }
-
-                    if (params.some(param => param < 0)) {
-                        reject(new Error("Invalid parameters: Negative values are not allowed"));
-
-                        return;
-                    }
-
-                    const content = params.length;
-                    const transform = (state: any) => ({ ...state, count: content });
-
-                    resolve({ content, transform });
-                })
-            });
-
-            const result = store.middleware.apply(action);
-
-            expect(middlewareFunction).to.have.been.calledWith(action);
-            expect(result).to.be.true;
+            expect(result).to.be.false;
+            sinon.assert.calledWith(consoleError, "Hydration failed:", sinon.match.instanceOf(Error));
+            expect(validationSpy).to.have.been.calledOnceWith(({ count: 10 }))
         });
 
-        it("should only apply middlewares that match the filter", () => {
-            const store = Store.create({ value: 0 });
-            const middlewareFunction = sinon.spy();
-            const filterFunction = (action: any) => action.name === "TEST_ACTION";
-            store.middleware.add(middlewareFunction, filterFunction);
+        it("should invoke cleanup hook regardless of hydration success or failure", async function() {
+            const initialState = JSON.stringify({ count: 10 });
+            const cleanupSpy = sinon.spy();
 
-            const success = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise((resolve, reject) => {
-                    if (typeof currentState !== "object" || currentState === null) {
-                        reject(new Error("Invalid state: State must be a non-null object"));
+            Hooks.register("after-hydration-cleanup", cleanupSpy);
 
-                        return;
-                    }
+            await store.hydrate(initialState);
 
-                    if (params.some(param => param < 0)) {
-                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+            expect(cleanupSpy.calledOnce).to.be.true;
 
-                        return;
-                    }
+            cleanupSpy.resetHistory();
 
-                    const content = params.length;
-                    const transform = (state: any) => ({ ...state, count: content });
+            await store.hydrate("invalid JSON");
 
-                    resolve({ content, transform });
-                })
-            });
-
-            const failure = Action.create("FAIL_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<Effect<any, any>> => {
-                return new Promise((resolve, reject) => {
-                    if (typeof currentState !== "object" || currentState === null) {
-                        reject(new Error("Invalid state: State must be a non-null object"));
-
-                        return;
-                    }
-
-                    if (params.some(param => param < 0)) {
-                        reject(new Error("Invalid parameters: Negative values are not allowed"));
-
-                        return;
-                    }
-
-                    const content = params.length;
-                    const transform = (state: any) => ({ ...state, count: content });
-
-                    resolve({ content, transform });
-                })
-            });
-
-            store.middleware.apply(success);
-            store.middleware.apply(failure);
-
-            expect(middlewareFunction).to.have.been.calledOnceWith(success);
-            expect(middlewareFunction).not.to.have.been.calledWith(failure);
+            expect(cleanupSpy.calledOnce).to.be.true;
         });
     });
 });
