@@ -1,6 +1,6 @@
 import * as sinon from "sinon";
 import { expect } from "chai";
-import { Hooks } from "../../../src/__core/hooks";
+import { Hooks } from "../../../src/core/hooks";
 
 describe("Hooks", () => {
     describe("register", () => {

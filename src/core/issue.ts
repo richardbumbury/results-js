@@ -1,5 +1,5 @@
 import { randomUUID as uuid } from "crypto";
-import { IssueJSON } from "../__interfaces";
+import { IssueJSON } from "../interfaces";
 import { Action } from "./action";
 import { Result } from "./result";
 

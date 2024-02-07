@@ -1,4 +1,4 @@
-import { Effect } from "../__interfaces";
+import { Effect } from "../interfaces";
 import { Action } from "./action";
 
 /**

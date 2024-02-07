@@ -1,7 +1,7 @@
 import * as sinon from "sinon";
 import { expect } from "chai";
-import { Effect } from "../../../src/__interfaces";
-import { Store, Action, Result, Issue, Hooks } from "../../../src/__core";
+import { Effect } from "../../../src/interfaces";
+import { Store, Action, Result, Issue, Hooks } from "../../../src/core";
 
 describe("Store", () => {
     describe("create", function() {

@@ -1,5 +1,5 @@
 import { randomUUID as uuid } from "crypto";
-import { ActionJSON, Effect } from "../__interfaces";
+import { ActionJSON, Effect } from "../interfaces";
 import { Ledger } from "./ledger";
 
 /**

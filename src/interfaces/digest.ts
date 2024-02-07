@@ -1,4 +1,4 @@
-import { Action } from "../__core";
+import { Action } from "../core";
 
 /**
  * Represents a digest of the application's state at a specific point in time.

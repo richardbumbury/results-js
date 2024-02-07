@@ -1,6 +1,6 @@
 import { randomUUID as uuid } from "crypto";
 import { diff, Diff } from "deep-diff";
-import { ResultJSON } from "../__interfaces";
+import { ResultJSON } from "../interfaces";
 import { Action } from "./action";
 import { Hooks } from "./hooks";
 

@@ -1,1 +1,1 @@
-export { Action, Result, Issue, Store } from "./__core";
+export { Action, Result, Issue, Store } from "./core";

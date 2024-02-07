@@ -1,7 +1,7 @@
 import * as sinon from "sinon";
 import { expect } from "chai";
-import { Effect } from "../../../src/__interfaces";
-import { Action, Hooks, Result } from "../../../src/__core";
+import { Effect } from "../../../src/interfaces";
+import { Action, Hooks, Result } from "../../../src/core";
 
 describe("Result", () => {
     describe("success", () => {

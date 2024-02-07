@@ -1,6 +1,6 @@
 import { expect } from "chai";
-import { Ledger, Action } from "../../../src/__core";
-import { Effect } from "../../../src/__interfaces";
+import { Ledger, Action } from "../../../src/core";
+import { Effect } from "../../../src/interfaces";
 
 describe("Ledger", () => {
     beforeEach(() => {
