@@ -123,6 +123,29 @@ describe("Ledger", () => {
 
     describe("has", () => {
         it("should return false when the action is not registered", () => {
+            const exec = (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== "object" || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
+
+                        return;
+                    }
+
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+
+                        return;
+                    }
+
+                    const content = params.length;
+                    const transform = (state: any) => ({ ...state, count: content });
+
+                    resolve({ content, transform });
+                })
+            };
+
+            Ledger.set("TEST_ACTION", exec);
+
             const result = Ledger.has("UNREGISTERED_ACTION");
 
             expect(result).to.be.false;
@@ -198,7 +221,7 @@ describe("Ledger", () => {
             expect(result.transform(state)).to.deep.equal(nextState);
         });
 
-        it("should throw an error when trying to rehydrate with a non-registered action", () => {
+        it("should throw an error when trying to rehydrate with an action that is not registered", () => {
             const name = "TEST_ACTION";
             const params = [1, 2, 3];
             const exec = (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
@@ -226,7 +249,7 @@ describe("Ledger", () => {
 
             action = Action.create(name, params, exec);
 
-            expect(() => Ledger.rehydrate(action, "MISSING_ACTION")).to.throw(Error);
+            expect(() => Ledger.rehydrate(action, "UNREGISTERED_ACTION")).to.throw(Error);
         });
     });
 });

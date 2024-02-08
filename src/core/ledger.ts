@@ -12,7 +12,7 @@ export class Ledger {
     private static registry = new Map<string, (currentState: any, params: any) => Promise<IEffect<any, any>>>();
 
     /**
-     * Registers an exec function for a specific action. If the action already exists, an error is thrown.
+     * Registers an exec function for a specific action.
      *
      * @param id The unique identifier of the action.
      * @param exec The exec function to be associated with the action.
