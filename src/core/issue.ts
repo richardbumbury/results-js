@@ -33,13 +33,13 @@ export class Issue<S, P, C> extends Error {
     private readonly _action: Action<P, S, C>;
 
      /**
-     * The timestamp when the issue  was created.
+     * The times when the issue was created.
      */
      private readonly _timestamp: Date;
 
      /**
       * The execution time of the action, calculated as the difference between the action's timestamp and the issue's timestamp.
-      * This may also represent the time it took to rehydrate the issue if the issue is deserialized.
+      * This will represent the time it took to rehydrate the result when the issue is deserialized.
       */
      private readonly _executionTime: number | null;
 
@@ -86,7 +86,7 @@ export class Issue<S, P, C> extends Error {
      *
      * @returns The unique identifier of the issue.
      */
-    public get id(): string {
+    get id(): string {
         return this._id;
     }
 
@@ -95,7 +95,7 @@ export class Issue<S, P, C> extends Error {
      *
      * @returns The correlation identifier of the issue.
      */
-    public get correlationId(): string | undefined {
+    get correlationId(): string | undefined {
         return this._correlationId;
     }
 
@@ -105,7 +105,7 @@ export class Issue<S, P, C> extends Error {
      *
      * @returns The action that generated this issue.
      */
-    public get action(): Action<P, S, C> {
+    get action(): Action<P, S, C> {
         return this._action;
     }
 
@@ -114,7 +114,7 @@ export class Issue<S, P, C> extends Error {
      *
      * @returns The result associate with this issue.
      */
-    public get result(): Result<S, P, C> {
+    get result(): Result<S, P, C> {
         return this._result;
     }
 
@@ -123,7 +123,7 @@ export class Issue<S, P, C> extends Error {
      *
      * @returns The timestamp.
      */
-    public get timestamp(): Date {
+    get timestamp(): Date {
         return this._timestamp;
     }
 
@@ -132,7 +132,7 @@ export class Issue<S, P, C> extends Error {
      *
      * @returns The execution time in milliseconds.
      */
-    public get executionTime(): number | null {
+    get executionTime(): number | null {
         return this._executionTime;
     }
 
@@ -166,26 +166,25 @@ export class Issue<S, P, C> extends Error {
             /**
              * Sets an additional message for a specific issue.
              *
-             * @param issueId The unique identifier of the issue.
+             * @param id The unique identifier of the issue.
              * @param message The additional message to associate with the issue.
              */
-            set: ({ issueId, message }: { issueId: string, message: string }) => {
-                Issue._messages.set(issueId, message);
+            set: ({ id, message }: { id: string, message: string }) => {
+                Issue._messages.set(id, message);
             },
 
             /**
              * Retrieves the additional message associated with a specific issue.
              *
-             * @param issueId The unique identifier of the issue.
+             * @param id The unique identifier of the issue.
              *
              * @returns The additional message associated with the issue, or undefined if not found.
              */
-            get: (issueId: string): string | undefined => {
-                return Issue._messages.get(issueId);
+            get: (id: string): string | undefined => {
+                return Issue._messages.get(id);
             }
         };
     }
-
 
     /**
      * Static method to create an Issue instance from an action and an error.
@@ -256,28 +255,5 @@ export class Issue<S, P, C> extends Error {
             timestamp: this._timestamp.toISOString(),
             executionTime: this._executionTime,
         };
-    }
-
-    /**
-     * Converts the issue into a string representation for debugging or logging.
-     * This representation includes key details such as the issue's error message, associated action's name and ID, and execution time (if present).
-     *
-     * @returns A string representation of the issue.
-     */
-    public toString(): string {
-        let string = `Issue ID: ${this._id}\n`;
-
-        if (this._correlationId) {
-            string += `Correlation ID: ${this._correlationId}\n`;
-        }
-
-        string += `Action Name: ${this._action.name}, Action ID: ${this._action.id}\n`;
-        string += `Error Message: ${this.message}\n`;
-        string += `Timestamp: ${this._timestamp.toISOString()}\n`;
-
-        if (this._executionTime !== null) {
-            string += `Execution Time: ${this._executionTime}ms\n`;
-        }
-        return string;
     }
 }

@@ -6,7 +6,7 @@ import { Action, Result, Issue } from "../../../src/core";
 describe("Issue", () => {
     describe("fromAction", () => {
         it("should create an Issue with the correct error message", () => {
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
+            const action = Action.create("FAIL_ACTION", [-1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -34,7 +34,7 @@ describe("Issue", () => {
         });
 
         it("should create an Issue with the correct action", () => {
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
+            const action = Action.create("FAIL_ACTION", [-1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -62,7 +62,7 @@ describe("Issue", () => {
         });
 
         it("should create an Issue with a failure Result", () => {
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
+            const action = Action.create("FAIL_ACTION", [-1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -145,7 +145,7 @@ describe("Issue", () => {
 
     describe("toJSON", () => {
         it("serializes an Issue instance to JSON", () => {
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
+            const action = Action.create("FAIL_ACTION", [-1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -173,7 +173,7 @@ describe("Issue", () => {
 
             expect(json).to.be.an("object");
             expect(json).to.include.keys("id", "correlationId", "name", "message", "action", "result");
-            expect(json.action.name).to.equal("TEST_ACTION");
+            expect(json.action.name).to.equal("FAIL_ACTION");
             if (json.result) {
                 expect(json.result).to.not.be.null;
                 expect(json.result.errors.length).to.be.greaterThan(0);
@@ -210,43 +210,5 @@ describe("Issue", () => {
 
             expect(() => JSON.stringify(json)).to.not.throw();
         });
-    });
-
-    describe("toString", function() {
-        it("should return a string representation for an issue without a correlation ID", function() {
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
-                return new Promise((resolve, reject) => {
-                    if (typeof currentState !== "object" || currentState === null) {
-                        reject(new Error("Invalid state: State must be a non-null object"));
-
-                        return;
-                    }
-
-                    if (params.some(param => param < 0)) {
-                        reject(new Error("Invalid parameters: Negative values are not allowed"));
-
-                        return;
-                    }
-
-                    const content = params.length;
-                    const transform = (state: any) => ({ ...state, count: content });
-
-                    resolve({ content, transform });
-                })
-            });
-
-            const error = new Error("Test error");
-            const issue = Issue.fromAction(action, error);
-
-            const expectedString = [
-                `Issue ID: ${issue.id}`,
-                `Action Name: TEST_ACTION, Action ID: ${action.id}`,
-                `Error Message: Test error`,
-                `Timestamp: ${issue.timestamp.toISOString()}`
-            ].join('\n') + '\n';
-
-            expect(issue.toString()).to.include(expectedString);
-        });
-
     });
 });
