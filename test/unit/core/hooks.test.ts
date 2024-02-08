@@ -3,6 +3,16 @@ import { expect } from "chai";
 import { Hooks } from "../../../src/core/hooks";
 
 describe("Hooks", () => {
+    let warn: any;
+
+    beforeEach(() => {
+        warn = sinon.stub(console, "warn");
+    });
+
+    afterEach(() => {
+        sinon.restore();
+    })
+
     describe("register", () => {
         beforeEach(() => {
             Hooks.clearAll();
@@ -168,6 +178,16 @@ describe("Hooks", () => {
             } finally {
                 consoleErrorStub.restore();
             }
+        });
+
+        it("should log a warning if no hooks are registered for an event", async () => {
+            const event = "test";
+
+            Hooks.clearAll();
+
+            await Hooks.invoke(event, "arg1", 2);
+
+            sinon.assert.calledWith(warn, sinon.match(`Warning: No hooks registered for event '${event}'.`));
         });
     });
 

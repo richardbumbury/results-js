@@ -31,6 +31,7 @@ export class Hooks {
         }
 
         const hooks = this.hooks.get(e)!;
+
         if (hooks.some(hook => hook === f)) {
 
             return false;
@@ -94,7 +95,6 @@ export class Hooks {
 
     /**
      * Invokes all registered hooks for a specific event name, in the order they were registered.
-     * This method is now asynchronous and waits for all asynchronous hooks to complete.
      *
      * @param e The name of the event to trigger hooks for.
      * @param args Arguments to pass to each hook function.
@@ -116,6 +116,8 @@ export class Hooks {
 
             // Wait for all hooks to complete
             await Promise.all(promises);
+        } else {
+            console.warn(`Warning: No hooks registered for event '${e}'.`);
         }
     }
 

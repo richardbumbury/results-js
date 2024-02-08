@@ -4,6 +4,16 @@ import { IEffect } from "../../../src/interfaces";
 import { Store, Action, Result, Issue, Hooks } from "../../../src/core";
 
 describe("Store", () => {
+    let warn: any;
+
+    beforeEach(() => {
+        warn = sinon.stub(console, "warn");
+    });
+
+    afterEach(() => {
+        sinon.restore();
+    })
+
     describe("create", function() {
         it("should create a store with the given initial state", function() {
             const state = { count: 0 };
@@ -46,10 +56,6 @@ describe("Store", () => {
         beforeEach(function() {
             invoke = sinon.stub(Hooks, "invoke").resolves();
             sinon.stub(console, "error");
-        });
-
-        afterEach(function() {
-            sinon.restore();
         });
 
         it("should successfully apply an action and update the state", async function() {
@@ -207,10 +213,6 @@ describe("Store", () => {
         beforeEach(function() {
             store = Store.create({});
             consoleError = sinon.stub(console, "error");
-        });
-
-        afterEach(function() {
-            sinon.restore();
         });
 
         it("should successfully hydrate the state", async function() {
