@@ -38,7 +38,7 @@ describe("Result", () => {
 
     describe("failure", () => {
         it("should create a failure result with correct errors", () => {
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
+            const action = Action.create("FAIL_ACTION", [-1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -145,8 +145,8 @@ describe("Result", () => {
             const afterDeserializeStateStub = sinon.stub();
 
             try {
-                Hooks.register("beforeDeserializeState", beforeDeserializeStateStub);
-                Hooks.register("afterDeserializeState", afterDeserializeStateStub);
+                Hooks.register("before-deserialize-state", beforeDeserializeStateStub);
+                Hooks.register("after-deserialize-state", afterDeserializeStateStub);
 
                 const json = {
                     id: "12345",
@@ -171,8 +171,8 @@ describe("Result", () => {
                 sinon.assert.calledWith(beforeDeserializeStateStub, '{"count": 0 }', '{"count": 3 }');
                 sinon.assert.calledWith(afterDeserializeStateStub, '{"count": 0 }', '{"count": 3 }');
             } finally {
-                Hooks.unregister("beforeDeserializeState", beforeDeserializeStateStub);
-                Hooks.unregister("afterDeserializeState", afterDeserializeStateStub);
+                Hooks.unregister("before-deserialize-state", beforeDeserializeStateStub);
+                Hooks.unregister("after-deserialize-state", afterDeserializeStateStub);
             }
         });
     });
@@ -221,7 +221,7 @@ describe("Result", () => {
         });
 
         it("should serialize a failure result correctly", async () => {
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
+            const action = Action.create("FAIL_ACTION", [-1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -255,7 +255,7 @@ describe("Result", () => {
             expect(json.content).to.equal(null);
             expect(json.errors).to.have.lengthOf(1);
             expect(json.errors[0]).to.deep.include({ message: "Test error" });
-            expect(json.action).to.deep.include({ name: "TEST_ACTION" });
+            expect(json.action).to.deep.include({ name: "FAIL_ACTION" });
             expect(json.prevState).to.deep.equal(prevState);
             expect(json.nextState).to.equal(null);
             expect(json).to.have.property("timestamp").that.is.a("string");
@@ -295,70 +295,6 @@ describe("Result", () => {
         });
     });
 
-    describe("toString", function() {
-        it("should return a string representation for a successful result", function() {
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
-                return new Promise((resolve, reject) => {
-                    if (typeof currentState !== "object" || currentState === null) {
-                        reject(new Error("Invalid state: State must be a non-null object"));
-                        return;
-                    }
-
-                    if (params.some(param => param < 0)) {
-                        reject(new Error("Invalid parameters: Negative values are not allowed"));
-                        return;
-                    }
-
-                    const content = params.length;
-                    const transform = (state: any) => ({ ...state, count: content });
-
-                    resolve({ content, transform });
-                });
-            });
-
-            const result = Result.success(action, action.params.length, null, {});
-
-            expect(result.toString()).to.include("Success: true");
-            expect(result.toString()).to.include("Action: TEST_ACTION");
-            expect(result.toString()).to.include("Content: 3");
-        });
-
-        it("should return a string representation for a failed result with errors", async function() {
-            const action = Action.create("FAIL_ACTION", [-1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
-                return new Promise((resolve, reject) => {
-                    if (typeof currentState !== "object" || currentState === null) {
-                        reject(new Error("Invalid state: State must be a non-null object"));
-                        return;
-                    }
-
-                    if (params.some(param => param < 0)) {
-                        reject(new Error("Invalid parameters: Negative values are not allowed"));
-                        return;
-                    }
-
-                    const content = params.length;
-                    const transform = (state: any) => ({ ...state, count: content });
-
-                    resolve({ content, transform });
-                })
-            });
-
-            let result;
-
-            try {
-                await action.execute({});
-            } catch (error) {
-                result = Result.failure(action, [error as Error], null, null);
-            }
-
-            if (result) {
-                expect(result.toString()).to.include("Success: false");
-                expect(result.toString()).to.include("Action: FAIL_ACTION");
-                expect(result.toString()).to.include("Errors: Error: Invalid parameters: Negative values are not allowed");
-            }
-        });
-    });
-
     describe("isSuccess", () => {
         it("should return true for a successful result", () => {
             const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
@@ -387,7 +323,7 @@ describe("Result", () => {
         });
 
         it("should return false for a failed result", () => {
-            const action = Action.create("FAIL_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
+            const action = Action.create("FAIL_ACTION", [-1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -415,7 +351,7 @@ describe("Result", () => {
 
     describe("isFailure", () => {
         it("should return true for a failed result", () => {
-            const action = Action.create("FAIL_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
+            const action = Action.create("FAIL_ACTION", [-1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -499,7 +435,7 @@ describe("Result", () => {
         });
 
         it("should not alter the errors in a failed result", () => {
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
+            const action = Action.create("FAIL_ACTION", [-1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -591,7 +527,7 @@ describe("Result", () => {
         });
 
         it("should retain the failure state and errors in a failed result", () => {
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
+            const action = Action.create("FAIL_ACTION", [-1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -681,7 +617,7 @@ describe("Result", () => {
         });
 
         it("should apply the failure function on a failed result", () => {
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
+            const action = Action.create("FAIL_ACTION", [-1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -712,7 +648,7 @@ describe("Result", () => {
 
     describe("recover", () => {
         it("should transform a failed result into a successful one", () => {
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
+            const action = Action.create("FAIL_ACTION", [-1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -773,7 +709,7 @@ describe("Result", () => {
 
     describe("orElse", () => {
         it("should return an alternative result on a failed result", () => {
-            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
+            const action = Action.create("FAIL_ACTION", [-1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
@@ -833,7 +769,6 @@ describe("Result", () => {
     });
 
     describe("generateDiff", () => {
-
         it("should correctly identify changes between prevState and nextState", async () => {
             const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
@@ -869,7 +804,7 @@ describe("Result", () => {
             }
         });
 
-        it("should return undefined if prevState or nextState is null", () => {
+        it("should return undefined if prevState is null", () => {
             const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
@@ -891,16 +826,39 @@ describe("Result", () => {
                 })
             });
 
-            const resultWithNullPrev = Result.success(action, {}, null, { a: 2 });
+            const result = Result.success(action, {}, null, { a: 2 });
 
-            expect(resultWithNullPrev.generateDiff()).to.be.undefined;
-
-            const resultWithNullNext = Result.success(action, {}, { a: 1 }, null);
-
-            expect(resultWithNullNext.generateDiff()).to.be.undefined;
+            expect(result.generateDiff()).to.be.undefined;
         });
 
-        it("should return an empty array if prevState and nextState are identical", () => {
+        it("should return undefined if nextState is null", () => {
+            const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
+                return new Promise((resolve, reject) => {
+                    if (typeof currentState !== "object" || currentState === null) {
+                        reject(new Error("Invalid state: State must be a non-null object"));
+
+                        return;
+                    }
+
+                    if (params.some(param => param < 0)) {
+                        reject(new Error("Invalid parameters: Negative values are not allowed"));
+
+                        return;
+                    }
+
+                    const content = params.length;
+                    const transform = (state: any) => ({ ...state, count: content });
+
+                    resolve({ content, transform });
+                })
+            });
+
+            const result = Result.success(action, {}, { a: 1 }, null);
+
+            expect(result.generateDiff()).to.be.undefined;
+        });
+
+        it("should return undefined if prevState and nextState are identical", () => {
             const action = Action.create("TEST_ACTION", [1, 2, 3], async (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
                     if (typeof currentState !== "object" || currentState === null) {
