@@ -45,7 +45,7 @@ export class Store<S> {
      *
      * @returns A deep clone of the current state as a read-only object.
      */
-    public get state(): S {
+    get state(): S {
         return clone(this._state) as Readonly<S>;
     }
 
@@ -54,7 +54,7 @@ export class Store<S> {
      *
      * @returns The current mode of the store.
      */
-    public get mode(): "development" | "production" | "test" {
+    get mode(): "development" | "production" | "test" {
         return this._mode;
     }
 
@@ -63,7 +63,7 @@ export class Store<S> {
      *
      * @returns A record containing metadata about the store.
      */
-    public get metadata(): Record<string, any> {
+    get metadata(): Record<string, any> {
         return this._metadata;
     }
 
@@ -92,8 +92,12 @@ export class Store<S> {
      * This method encapsulates the outcome of the action's execution and manages state transitions, treating errors as data.
      * Freezes the state in development mode to enforce immutability.
      *
-    * @param action The action to be applied to the store.
+     * @param action The action to be applied to the store.
      *
+     * @hook `before-state-change` Invoked before the state changes, with the current state as an argument.
+     * @hook `after-state-change` Invoked after the state has successfully changed, with the new state as an argument.
+     * @hook `after-action-cleanup` Invoked in a finally block after action application, regardless of outcome, with the action and outcome as arguments.
+     * 
      * @returns A Promise that resolves to a Result representing the outcome of the action, or an Issue if there was a problem.
      */
     public async apply(action: Action<any, S, any>): Promise<Result<S, any, any> | Issue<S, any, any>> {
@@ -136,6 +140,12 @@ export class Store<S> {
      *
      * @param state A string representing the serialized state to be hydrated.
      *
+     * @hook `before-hydrate` Invoked before the hydration process begins, with the serialized state as an argument.
+     * @hook `state-validation` Invoked after parsing the serialized state and before updating the store's state, allowing for validation of the parsed state.
+     * @hook `after-hydrate` Invoked after the store's state has been successfully updated with the hydrated state.
+     * @hook `hydrate-error` Invoked if an error occurs during the hydration process, with the error as an argument.
+     * @hook `after-hydration-cleanup` Invoked in a finally block after the hydration process, regardless of outcome, with the hydrated (or attempted) state as an argument.
+     * 
      * @returns A promise that resolves to a boolean indicating the success of the hydration process.
      */
     public async hydrate(state: string): Promise<boolean> {
