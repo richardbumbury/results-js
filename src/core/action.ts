@@ -45,7 +45,7 @@ export class Action<P , S , C > {
     /**
      * Constructs a new Action.
      *
-     * @param name The name of the action, providing a unique identifier.
+     * @param name The name of the action, ideally providing a unique identifier.
      * @param params Parameters required for executing the action.
      * @param exec The function that defines the execution logic of the action.
      * @param correlationId An optional identifier used to correlate this action with related actions.
@@ -64,7 +64,7 @@ export class Action<P , S , C > {
      *
      * @returns The unique identifier of the action.
      */
-    public get id(): string {
+    get id(): string {
         return this._id;
     }
 
@@ -73,7 +73,7 @@ export class Action<P , S , C > {
      *
      * @returns The correlation identifier of the action.
      */
-    public get correlationId(): string | undefined {
+    get correlationId(): string | undefined {
         return this._correlationId;
     }
 
@@ -82,7 +82,7 @@ export class Action<P , S , C > {
      *
      * @returns The name of the action.
      */
-    public get name(): string {
+    get name(): string {
         return this._name;
     }
 
@@ -91,7 +91,7 @@ export class Action<P , S , C > {
      *
      * @returns An array of parameters.
      */
-    public get params(): P[] {
+    get params(): P[] {
         return this._params;
     }
 
@@ -100,7 +100,7 @@ export class Action<P , S , C > {
      *
      * @returns The timestamp of the action's creation.
      */
-    public get timestamp(): Date {
+    get timestamp(): Date {
         return this._timestamp;
     }
 
@@ -124,11 +124,11 @@ export class Action<P , S , C > {
 
     /**
      * Reconstructs an Action instance from a JSON object.
-     * This static method is used to create a new Action instance based on previously serialized data.
+     * Creates a new Action instance based on previously serialized data.
      * A new unique identifier is generated for the rehydrated action to ensure uniqueness.
-     * The exec function cannot be serialized, and it needs to be reattached to the Action after using fromJSON.
+     * The exec function cannot be serialized, and must be reattached to the Action after using fromJSON.
      *
-     * @param json The JSON object to reconstruct the Action from. It should contain the name, params, and optionally the correlationId. A new id and timestamp will be automatically generated.
+     * @param json The JSON object to reconstruct the Action from. It should contain the name, params, and optionally the correlationId.
      *
      * @returns A new instance of the Action class with a new ID, the provided correlation ID (if any), name, params, and a new timestamp.
      */
@@ -153,11 +153,8 @@ export class Action<P , S , C > {
         return action
     }
 
-
     /**
      * Serializes the action into a JSON-friendly format.
-     * This method returns a plain object containing the serializable properties of the action.
-     * It is useful for scenarios where the action needs to be converted to a JSON string, such as when storing the action in a database or sending it over a network.
      *
      * @returns An object containing the action's serializable data: name, parameters, and timestamp.
      */
@@ -174,19 +171,9 @@ export class Action<P , S , C > {
     }
 
     /**
-     * Converts the action into a string representation for debugging or logging purposes.
-     *
-     * @returns A string representation of the action.
-     */
-    toString(): string {
-        return `Action: ${this._name}`;
-    }
-
-    /**
      * Attaches an execution function to the action.
-     * This function defines the asynchronous logic to be executed when the action is invoked.
      *
-     * @param exec The execution function that defines the action's logic. It takes the current state and parameters, and must return a Promise that resolves to an Effect.
+     * @param exec Defines the action's logic. It takes the current state and parameters, and must return a Promise that resolves to an Effect.
      *
      * @returns The instance of the Action class.
      */
@@ -198,12 +185,12 @@ export class Action<P , S , C > {
 
     /**
      * Executes the action using its attached execution logic.
-     * This method should be called to trigger the execution of the action.
-     * It ensures that the exec function has been attached and then invokes it with the current state and predefined parameters.
+     * Called to trigger the execution of the action.
+     * Ensures that the exec function has been attached and then invokes it with the current state and predefined parameters.
      *
      * @param state The current state of the application or context in which the action is executed.
      *
-     * @returns A Promise that resolves to an Effect, representing the effect of the action on the state.
+     * @returns A promise that resolves to an Effect, representing the effect of the action on the state.
      *
      * @throws An error if the exec function has not been attached to the action.
      */

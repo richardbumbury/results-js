@@ -36,7 +36,7 @@ describe("Action", () => {
             expect(action.name).to.equal(name);
             expect(action.params).to.deep.equal(params);
             expect(action.execute).to.be.a("function");
-            expect(action.timestamp).to.be.instanceOf(Date);
+            expect(action.timestamp).to.be.instanceof(Date);
         });
     });
 
@@ -55,7 +55,7 @@ describe("Action", () => {
         it("should reattach an exec function from the Ledger if available", async () => {
             const exec = (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
                 return new Promise((resolve, reject) => {
-                    if (typeof currentState !== 'object' || currentState === null) {
+                    if (typeof currentState !== "object" || currentState === null) {
                         reject(new Error("Invalid state: State must be a non-null object"));
 
                         return;
@@ -136,7 +136,7 @@ describe("Action", () => {
             expect(typeof action.id).to.equal("string")
             expect(action.name).to.equal(json.name);
             expect(action.params).to.deep.equal(json.params);
-            expect(action.timestamp).to.be.instanceOf(Date);
+            expect(action.timestamp).to.be.instanceof(Date);
         });
 
         it("should create an Action instance with a default exec function", async () => {
@@ -262,7 +262,7 @@ describe("Action", () => {
                 })
             };
 
-            const action = Action.create(name, params, exec);
+            Action.create(name, params, exec);
 
             expect(set.calledOnce).to.be.true;
             expect(set.calledWith(sinon.match.string, sinon.match.func)).to.be.true;
@@ -296,37 +296,6 @@ describe("Action", () => {
             const json = action.toJSON();
 
             expect(() => JSON.stringify(json)).to.not.throw();
-        });
-    });
-
-    describe("toString", function () {
-        it("should return the correct string representation for an action", function () {
-            const name = "TEST_ACTION";
-            const params = [1, 2, 3];
-            const exec = (currentState: any, params: number[]): Promise<IEffect<any, any>> => {
-                return new Promise((resolve, reject) => {
-                    if (typeof currentState !== "object" || currentState === null) {
-                        reject(new Error("Invalid state: State must be a non-null object"));
-
-                        return;
-                    }
-
-                    if (params.some(param => param < 0)) {
-                        reject(new Error("Invalid parameters: Negative values are not allowed"));
-
-                        return;
-                    }
-
-                    const content = params.length;
-                    const transform = (state: any) => ({ ...state, count: content });
-
-                    resolve({ content, transform });
-                })
-            };
-
-            const action = Action.create(name, params, exec);
-
-            expect(action.toString()).to.include(action.name);
         });
     });
 
