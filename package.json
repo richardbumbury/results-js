@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NetLawPlatform/result.git"
+    "url": "git+https://github.com/richardbumbury/result"
   },
   "keywords": [
     "developer-tools",
@@ -36,9 +36,9 @@
   "author": "Richard Bumbury",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/NetLawPlatform/result/issues"
+    "url": "https://github.com/richardbumbury/result/issues"
   },
-  "homepage": "https://github.com/NetLawPlatform/result#readme",
+  "homepage": "https://github.com/richardbumbury/result#readme",
   "devDependencies": {
     "@types/chai": "^4.3.10",
     "@types/chai-as-promised": "^7.1.8",
