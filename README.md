@@ -1,10 +1,10 @@
-# Result Library
+# Results
 
 ## Overview
-The `Result` library is a cutting-edge tool designed to inject Functional Programming principles into an Object-Oriented Programming environment. Its primary objective is to encapsulate the outcome of operations, clearly differentiating between successful results and failures. This unique approach enhances error handling, boosts code readability, and fosters robust, maintainable code structures.
+`Results` is a cutting-edge tool designed to inject Functional Programming principles into an Object-Oriented Programming environment. Its primary objective is to encapsulate the outcome of operations, clearly differentiating between successful results and failures. This unique approach enhances error handling, boosts code readability, and fosters robust, maintainable code structures.
 
 ## Core Concept
-The cornerstone of the `Result` library is the `Result` class. This class functions as a type-safe union, capable of holding either a success value or an error object, but never both. This structure allows methods to return a `Result` object that communicates the outcome of an operation.
+The cornerstone of `Results` is the `Result` class. This class functions as a type-safe union, capable of holding either a success value or an error object, but never both. This structure allows methods to return a `Result` object that communicates the outcome of an operation.
 
 ## Key Features
 
@@ -50,7 +50,7 @@ The predictable nature of `Result` objects streamlines unit testing, enabling ea
 
 ## `Action`
 
-The `Action` class is a foundational component of the `Result` library, designed to encapsulate and manage executable actions within applications. By offering a structured approach to executing operations and managing their effects on application state, the `Action` class leads to creating more predictable, maintainable, and testable codebases.
+The `Action` class is a foundational component of `Results`, designed to encapsulate and manage executable actions within applications. By offering a structured approach to executing operations and managing their effects on application state, the `Action` class leads to creating more predictable, maintainable, and testable codebases.
 
 ### Role and Usage
 
@@ -74,7 +74,7 @@ The `Action` class is a foundational component of the `Result` library, designed
 
 ## `Result`
 
-The `Result` class is a critical component of the `Result` library, engineered to elegantly handle the outcomes of operations within applications. It provides a robust framework for distinguishing between successful outcomes and failures, thereby facilitating error handling, debugging, and operational transparency.
+The `Result` class is a critical component of `Results`, engineered to elegantly handle the outcomes of operations within applications. It provides a robust framework for distinguishing between successful outcomes and failures, thereby facilitating error handling, debugging, and operational transparency.
 
 ### Role and Usage
 
@@ -103,7 +103,7 @@ The `Result` class is a critical component of the `Result` library, engineered t
 
 ## `Issue`
 
-The `Issue` class is an integral part of the `Result` library,  designed to represent and manage errors or problems encountered during the execution of operations within applications. It acts as a sophisticated mechanism for error handling, offering a structured approach to capturing and dealing with issues that arise, thereby enhancing application robustness and maintainability.
+The `Issue` class is an integral part of `Results`,  designed to represent and manage errors or problems encountered during the execution of operations within applications. It acts as a sophisticated mechanism for error handling, offering a structured approach to capturing and dealing with issues that arise, thereby enhancing application robustness and maintainability.
 
 ### Role and Usage
 
@@ -125,7 +125,7 @@ Here's the `Methods` section for the `Issue` class, formatted to match the struc
 
 ## `Store`
 
-The `Store` class is a pivotal component of the `Result` library, designed to serve as the central hub for state management within applications. It facilitates a cohesive and predictable approach to managing application state, leveraging the principles of immutability and functional programming to ensure reliable and efficient state transitions.
+The `Store` class is a pivotal component of `Results`, designed to serve as the central hub for state management within applications. It facilitates a cohesive and predictable approach to managing application state, leveraging the principles of immutability and functional programming to ensure reliable and efficient state transitions.
 
 ### Role and Usage
 
@@ -140,13 +140,13 @@ The `Store` class is a pivotal component of the `Result` library, designed to se
 - **`apply`**: Executes an action against the store's current state, potentially updating it based on the action's outcome. This method orchestrates the application of actions, ensuring that state changes are the result of successful actions. It integrates with the `Hooks` system to provide lifecycle events (`before-state-change`, `after-state-change`, `after-action-cleanup`) for additional control and side-effects management. The method returns a `Promise` that resolves to either a `Result` or an `Issue`, reflecting the success or failure of the action's application and its effect on the state.
 - **`hydrate`**: Restores the store's state from a serialized version, commonly retrieved from an external source like local storage or a server. This asynchronous method parses the serialized state and updates the store, surrounded by a series of hooks (`before-hydrate`, `state-validation`, `after-hydrate`, `hydrate-error`, `after-hydration-cleanup`) for validating, processing, and handling the hydration process. The method aims to ensure that the store can be accurately reinitialized with a previous state, facilitating features like state persistence and recovery.
 
-Given the structure and intent of your previous class documentations, without direct access to the content of the `hooks.ts` file but assuming it provides a mechanism for lifecycle hooks within the `Result` library, here's a conceptual documentation for the `Hooks` class:
+Given the structure and intent of your previous class documentations, without direct access to the content of the `hooks.ts` file but assuming it provides a mechanism for lifecycle hooks within `Results`, here's a conceptual documentation for the `Hooks` class:
 
 ---
 
 ## `Hooks`
 
-The `Hooks` class is an essential component of the `Result` library, designed to facilitate event-driven programming by allowing developers to register and trigger custom callback functions (hooks) at specific points within the application flow. This class enhances the library's extensibility and flexibility, enabling custom integrations and behaviors tailored to specific application requirements.
+The `Hooks` class is an essential component of `Results`, designed to facilitate event-driven programming by allowing developers to register and trigger custom callback functions (hooks) at specific points within the application flow. This class enhances the library's extensibility and flexibility, enabling custom integrations and behaviors tailored to specific application requirements.
 
 ### Role and Usage
 

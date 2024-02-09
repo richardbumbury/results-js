@@ -1,5 +1,5 @@
 {
-  "name": "@richardbumbury/result",
+  "name": "results-js",
   "version": "1.0.0",
   "description": "A library offering functional and object-oriented programming tools for state and error management, compatible with both TypeScript and JavaScript projects.",
   "main": "dist/index.js",
