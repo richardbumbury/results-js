@@ -126,7 +126,6 @@ export class Action<P , S , C > {
      * Reconstructs an Action instance from a JSON object.
      * Creates a new Action instance based on previously serialized data.
      * A new unique identifier is generated for the rehydrated action to ensure uniqueness.
-     * The exec function cannot be serialized, and must be reattached to the Action after using fromJSON.
      *
      * @param json The JSON object to reconstruct the Action from. It should contain the name, params, and optionally the correlationId.
      *
